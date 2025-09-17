@@ -48,8 +48,8 @@ def generar_grafico_etiquetas(user_id):
         # Contar etiquetas
         todas_etiquetas = []
         for contacto in contactos:
-            if contacto.etiquetas:
-                todas_etiquetas.extend(contacto.etiquetas)
+            if contacto.etiquetas_list:
+                todas_etiquetas.extend(contacto.etiquetas_list)
         
         if not todas_etiquetas:
             return None
