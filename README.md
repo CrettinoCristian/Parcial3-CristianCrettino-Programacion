@@ -161,10 +161,6 @@ La aplicación estará disponible en: **http://localhost:5000**
 2. **Iniciar sesión**: Usa tus credenciales en `/auth/login`
 3. **Explorar el dashboard**: Ve las métricas y acciones rápidas
 
-### Si usaste datos de ejemplo:
-- **Email**: demo@minicrm.com
-- **Password**: demo123
-
 ### Funcionalidades Principales
 
 #### Gestión de Contactos
