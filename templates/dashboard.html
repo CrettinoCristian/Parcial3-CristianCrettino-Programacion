@@ -1,0 +1,225 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Mini CRM Personal{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h2">
+        <i class="bi bi-speedometer2"></i> Dashboard
+    </h1>
+    <div>
+        <a href="{{ url_for('contactos.nuevo') }}" class="btn btn-primary">
+            <i class="bi bi-person-plus"></i> Nuevo Contacto
+        </a>
+    </div>
+</div>
+
+<!-- Métricas principales -->
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="card-title mb-0">Total Contactos</h5>
+                        <h2 class="mb-0">{{ total_contactos }}</h2>
+                    </div>
+                    <div>
+                        <i class="bi bi-people" style="font-size: 2.5rem;"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer bg-primary bg-opacity-75">
+                <a href="{{ url_for('contactos.listar') }}" class="text-white text-decoration-none">
+                    <i class="bi bi-arrow-right"></i> Ver todos los contactos
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="card-title mb-0">Interacciones</h5>
+                        <h2 class="mb-0">{{ total_interacciones }}</h2>
+                    </div>
+                    <div>
+                        <i class="bi bi-chat-dots" style="font-size: 2.5rem;"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer bg-success bg-opacity-75">
+                <a href="{{ url_for('interacciones.recientes') }}" class="text-white text-decoration-none">
+                    <i class="bi bi-arrow-right"></i> Ver interacciones recientes
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="card-title mb-0">Contactos Recientes</h5>
+                        <h2 class="mb-0">{{ ultimos_contactos|length }}</h2>
+                    </div>
+                    <div>
+                        <i class="bi bi-person-plus" style="font-size: 2.5rem;"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer bg-info bg-opacity-75">
+                <span class="text-white">
+                    <i class="bi bi-clock"></i> Últimos 5 agregados
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Últimos contactos agregados -->
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-clock-history"></i> Últimos Contactos Agregados
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if ultimos_contactos %}
+                    <div class="list-group list-group-flush">
+                        {% for contacto in ultimos_contactos %}
+                            <div class="list-group-item d-flex justify-content-between align-items-start">
+                                <div class="ms-2 me-auto">
+                                    <div class="fw-bold">
+                                        <a href="{{ url_for('contactos.ver', id=contacto.id) }}" class="text-decoration-none">
+                                            {{ contacto.nombre }}
+                                        </a>
+                                    </div>
+                                    <small class="text-muted">
+                                        {% if contacto.empresa %}
+                                            <i class="bi bi-building"></i> {{ contacto.empresa }}
+                                        {% endif %}
+                                        {% if contacto.email %}
+                                            <br><i class="bi bi-envelope"></i> {{ contacto.email }}
+                                        {% endif %}
+                                    </small>
+                                </div>
+                                <small class="text-muted">
+                                    {{ contacto.fecha_creacion.strftime('%d/%m/%Y') }}
+                                </small>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <div class="text-center mt-3">
+                        <a href="{{ url_for('contactos.listar') }}" class="btn btn-outline-primary btn-sm">
+                            Ver todos los contactos
+                        </a>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-person-x text-muted" style="font-size: 3rem;"></i>
+                        <p class="text-muted mt-2">No tienes contactos aún</p>
+                        <a href="{{ url_for('contactos.nuevo') }}" class="btn btn-primary">
+                            <i class="bi bi-person-plus"></i> Agregar tu primer contacto
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Gráfico de etiquetas -->
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-pie-chart"></i> Distribución de Etiquetas
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if grafico_etiquetas %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Etiqueta</th>
+                                    <th class="text-end">Cantidad</th>
+                                    <th class="text-end">Porcentaje</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% set total = grafico_etiquetas.values() | sum %}
+                                {% for etiqueta, cantidad in grafico_etiquetas.items() %}
+                                <tr>
+                                    <td>
+                                        <span class="badge bg-primary">{{ etiqueta }}</span>
+                                    </td>
+                                    <td class="text-end">{{ cantidad }}</td>
+                                    <td class="text-end">{{ "%.1f" | format((cantidad / total * 100)) }}%</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-tags text-muted" style="font-size: 3rem;"></i>
+                        <p class="text-muted mt-2">
+                            No hay etiquetas para mostrar
+                        </p>
+                        <small class="text-muted">
+                            Agrega etiquetas a tus contactos para ver la distribución aquí
+                        </small>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Acciones rápidas -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-lightning"></i> Acciones Rápidas
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <a href="{{ url_for('contactos.nuevo') }}" class="btn btn-outline-primary w-100">
+                            <i class="bi bi-person-plus"></i><br>
+                            <small>Nuevo Contacto</small>
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{{ url_for('contactos.listar') }}" class="btn btn-outline-info w-100">
+                            <i class="bi bi-search"></i><br>
+                            <small>Buscar Contactos</small>
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{{ url_for('interacciones.recientes') }}" class="btn btn-outline-success w-100">
+                            <i class="bi bi-chat-dots"></i><br>
+                            <small>Ver Interacciones</small>
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{{ url_for('contactos.listar') }}?search=" class="btn btn-outline-warning w-100">
+                            <i class="bi bi-funnel"></i><br>
+                            <small>Filtrar por Etiqueta</small>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

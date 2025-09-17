@@ -1,0 +1,244 @@
+{% extends "base.html" %}
+
+{% block title %}Mis Contactos - Mini CRM Personal{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h2">
+        <i class="bi bi-people"></i> Mis Contactos
+        <span class="badge bg-primary">{{ contactos.total }}</span>
+    </h1>
+    <a href="{{ url_for('contactos.nuevo') }}" class="btn btn-primary">
+        <i class="bi bi-person-plus"></i> Nuevo Contacto
+    </a>
+</div>
+
+<!-- Filtros y búsqueda -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-6">
+                <label for="search" class="form-label">
+                    <i class="bi bi-search"></i> Buscar
+                </label>
+                <input type="text" 
+                       class="form-control" 
+                       id="search" 
+                       name="search" 
+                       placeholder="Buscar por nombre, email o empresa..."
+                       value="{{ search }}">
+            </div>
+            
+            <div class="col-md-4">
+                <label for="etiqueta" class="form-label">
+                    <i class="bi bi-tags"></i> Filtrar por Etiqueta
+                </label>
+                <select class="form-select" id="etiqueta" name="etiqueta">
+                    <option value="">Todas las etiquetas</option>
+                    {% for etiqueta in todas_etiquetas %}
+                        <option value="{{ etiqueta }}" 
+                                {{ 'selected' if etiqueta == etiqueta_filter }}>
+                            {{ etiqueta }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-outline-primary me-2">
+                    <i class="bi bi-funnel"></i> Filtrar
+                </button>
+                {% if search or etiqueta_filter %}
+                    <a href="{{ url_for('contactos.listar') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-x-circle"></i>
+                    </a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Lista de contactos -->
+{% if contactos.items %}
+    <div class="row">
+        {% for contacto in contactos.items %}
+            <div class="col-lg-6 mb-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h5 class="card-title mb-0">
+                                <a href="{{ url_for('contactos.ver', id=contacto.id) }}" 
+                                   class="text-decoration-none">
+                                    {{ contacto.nombre }}
+                                </a>
+                            </h5>
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" 
+                                        type="button" 
+                                        data-bs-toggle="dropdown">
+                                    <i class="bi bi-three-dots"></i>
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li>
+                                        <a class="dropdown-item" 
+                                           href="{{ url_for('contactos.ver', id=contacto.id) }}">
+                                            <i class="bi bi-eye"></i> Ver detalles
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" 
+                                           href="{{ url_for('contactos.editar', id=contacto.id) }}">
+                                            <i class="bi bi-pencil"></i> Editar
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" 
+                                           href="{{ url_for('interacciones.nueva', contacto_id=contacto.id) }}">
+                                            <i class="bi bi-chat-dots"></i> Nueva interacción
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <form method="POST" 
+                                              action="{{ url_for('contactos.eliminar', id=contacto.id) }}"
+                                              onsubmit="return confirm('¿Estás seguro de eliminar este contacto?');"
+                                              class="d-inline">
+                                            <button type="submit" class="dropdown-item text-danger">
+                                                <i class="bi bi-trash"></i> Eliminar
+                                            </button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-2">
+                            {% if contacto.empresa %}
+                                <small class="text-muted">
+                                    <i class="bi bi-building"></i> {{ contacto.empresa }}
+                                </small><br>
+                            {% endif %}
+                            {% if contacto.email %}
+                                <small class="text-muted">
+                                    <i class="bi bi-envelope"></i> 
+                                    <a href="mailto:{{ contacto.email }}" class="text-decoration-none">
+                                        {{ contacto.email }}
+                                    </a>
+                                </small><br>
+                            {% endif %}
+                            {% if contacto.telefono %}
+                                <small class="text-muted">
+                                    <i class="bi bi-telephone"></i> 
+                                    <a href="tel:{{ contacto.telefono }}" class="text-decoration-none">
+                                        {{ contacto.telefono }}
+                                    </a>
+                                </small>
+                            {% endif %}
+                        </div>
+                        
+                        {% if contacto.etiquetas %}
+                            <div class="mb-2">
+                                {% for etiqueta in contacto.etiquetas %}
+                                    <span class="badge bg-secondary me-1">{{ etiqueta }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        
+                        {% if contacto.notas %}
+                            <p class="card-text text-muted small">
+                                {{ contacto.notas[:100] }}{% if contacto.notas|length > 100 %}...{% endif %}
+                            </p>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="card-footer text-muted small">
+                        <div class="d-flex justify-content-between">
+                            <span>
+                                <i class="bi bi-clock"></i> 
+                                Última interacción: {{ contacto.ultima_interaccion.strftime('%d/%m/%Y') }}
+                            </span>
+                            <span>
+                                {{ contacto.interacciones|length }} interacciones
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Paginación -->
+    {% if contactos.pages > 1 %}
+        <nav aria-label="Paginación de contactos">
+            <ul class="pagination justify-content-center">
+                {% if contactos.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" 
+                           href="{{ url_for('contactos.listar', page=contactos.prev_num, search=search, etiqueta=etiqueta_filter) }}">
+                            Anterior
+                        </a>
+                    </li>
+                {% endif %}
+                
+                {% for page_num in contactos.iter_pages() %}
+                    {% if page_num %}
+                        {% if page_num != contactos.page %}
+                            <li class="page-item">
+                                <a class="page-link" 
+                                   href="{{ url_for('contactos.listar', page=page_num, search=search, etiqueta=etiqueta_filter) }}">
+                                    {{ page_num }}
+                                </a>
+                            </li>
+                        {% else %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ page_num }}</span>
+                            </li>
+                        {% endif %}
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">...</span>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if contactos.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" 
+                           href="{{ url_for('contactos.listar', page=contactos.next_num, search=search, etiqueta=etiqueta_filter) }}">
+                            Siguiente
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    {% endif %}
+{% else %}
+    <!-- Estado vacío -->
+    <div class="text-center py-5">
+        <i class="bi bi-person-x text-muted" style="font-size: 4rem;"></i>
+        <h3 class="text-muted mt-3">
+            {% if search or etiqueta_filter %}
+                No se encontraron contactos
+            {% else %}
+                No tienes contactos aún
+            {% endif %}
+        </h3>
+        <p class="text-muted">
+            {% if search or etiqueta_filter %}
+                Intenta con otros términos de búsqueda o filtros.
+            {% else %}
+                Comienza agregando tu primer contacto para organizar tu red profesional.
+            {% endif %}
+        </p>
+        {% if not search and not etiqueta_filter %}
+            <a href="{{ url_for('contactos.nuevo') }}" class="btn btn-primary btn-lg">
+                <i class="bi bi-person-plus"></i> Agregar Primer Contacto
+            </a>
+        {% else %}
+            <a href="{{ url_for('contactos.listar') }}" class="btn btn-outline-primary">
+                <i class="bi bi-arrow-left"></i> Ver Todos los Contactos
+            </a>
+        {% endif %}
+    </div>
+{% endif %}
+{% endblock %}

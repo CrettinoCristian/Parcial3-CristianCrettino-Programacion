@@ -1,0 +1,238 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {% if contacto %}
+        Editar Contacto - {{ contacto.nombre }}
+    {% else %}
+        Nuevo Contacto
+    {% endif %} - Mini CRM Personal
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    {% if contacto %}
+                        <i class="bi bi-pencil"></i> Editar Contacto
+                    {% else %}
+                        <i class="bi bi-person-plus"></i> Nuevo Contacto
+                    {% endif %}
+                </h4>
+            </div>
+            
+            <div class="card-body">
+                <form method="POST" id="contactoForm">
+                    <div class="row">
+                        <!-- Información básica -->
+                        <div class="col-md-6">
+                            <h5 class="mb-3 text-primary">
+                                <i class="bi bi-person"></i> Información Personal
+                            </h5>
+                            
+                            <div class="mb-3">
+                                <label for="nombre" class="form-label">
+                                    <i class="bi bi-person"></i> Nombre Completo *
+                                </label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="nombre" 
+                                       name="nombre" 
+                                       required 
+                                       placeholder="Nombre completo del contacto"
+                                       value="{{ contacto.nombre if contacto else request.form.nombre or '' }}">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="email" class="form-label">
+                                    <i class="bi bi-envelope"></i> Email
+                                </label>
+                                <input type="email" 
+                                       class="form-control" 
+                                       id="email" 
+                                       name="email" 
+                                       placeholder="email@ejemplo.com"
+                                       value="{{ contacto.email if contacto else request.form.email or '' }}">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="telefono" class="form-label">
+                                    <i class="bi bi-telephone"></i> Teléfono
+                                </label>
+                                <input type="tel" 
+                                       class="form-control" 
+                                       id="telefono" 
+                                       name="telefono" 
+                                       placeholder="+1234567890"
+                                       value="{{ contacto.telefono if contacto else request.form.telefono or '' }}">
+                            </div>
+                        </div>
+                        
+                        <!-- Información profesional -->
+                        <div class="col-md-6">
+                            <h5 class="mb-3 text-success">
+                                <i class="bi bi-building"></i> Información Profesional
+                            </h5>
+                            
+                            <div class="mb-3">
+                                <label for="empresa" class="form-label">
+                                    <i class="bi bi-building"></i> Empresa
+                                </label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="empresa" 
+                                       name="empresa" 
+                                       placeholder="Nombre de la empresa"
+                                       value="{{ contacto.empresa if contacto else request.form.empresa or '' }}">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="etiquetas" class="form-label">
+                                    <i class="bi bi-tags"></i> Etiquetas
+                                </label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="etiquetas" 
+                                       name="etiquetas" 
+                                       placeholder="cliente, proveedor, amigo (separadas por comas)"
+                                       value="{{ contacto.get_etiquetas_str() if contacto else request.form.etiquetas or '' }}">
+                                <div class="form-text">
+                                    Separa las etiquetas con comas. Ejemplo: cliente, importante, proveedor
+                                </div>
+                                <div id="etiquetasSugerencias" class="mt-2"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Notas -->
+                    <div class="row">
+                        <div class="col-12">
+                            <h5 class="mb-3 text-info">
+                                <i class="bi bi-journal-text"></i> Notas Adicionales
+                            </h5>
+                            
+                            <div class="mb-3">
+                                <label for="notas" class="form-label">
+                                    <i class="bi bi-journal-text"></i> Notas
+                                </label>
+                                <textarea class="form-control" 
+                                          id="notas" 
+                                          name="notas" 
+                                          rows="4" 
+                                          placeholder="Información adicional sobre el contacto...">{{ contacto.notas if contacto else request.form.notas or '' }}</textarea>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Botones -->
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('contactos.listar') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left"></i> Cancelar
+                        </a>
+                        
+                        <button type="submit" class="btn btn-primary">
+                            {% if contacto %}
+                                <i class="bi bi-check-lg"></i> Actualizar Contacto
+                            {% else %}
+                                <i class="bi bi-plus-lg"></i> Crear Contacto
+                            {% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        {% if contacto %}
+            <!-- Información adicional para edición -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-info-circle"></i> Información del Contacto
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <small class="text-muted">
+                                <strong>Creado:</strong> {{ contacto.fecha_creacion.strftime('%d/%m/%Y %H:%M') }}
+                            </small>
+                        </div>
+                        <div class="col-md-6">
+                            <small class="text-muted">
+                                <strong>Última actualización:</strong> {{ contacto.fecha_actualizacion.strftime('%d/%m/%Y %H:%M') }}
+                            </small>
+                        </div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-md-6">
+                            <small class="text-muted">
+                                <strong>Interacciones:</strong> {{ contacto.interacciones|length }}
+                            </small>
+                        </div>
+                        <div class="col-md-6">
+                            <small class="text-muted">
+                                <strong>Última interacción:</strong> {{ contacto.ultima_interaccion.strftime('%d/%m/%Y') }}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Auto-focus en el campo nombre
+        document.getElementById('nombre').focus();
+        
+        // Cargar etiquetas existentes para sugerencias
+        fetch('/contactos/api/etiquetas')
+            .then(response => response.json())
+            .then(etiquetas => {
+                if (etiquetas.length > 0) {
+                    const sugerenciasDiv = document.getElementById('etiquetasSugerencias');
+                    const etiquetasHtml = etiquetas.map(etiqueta => 
+                        `<span class="badge bg-light text-dark me-1 etiqueta-sugerencia" 
+                               style="cursor: pointer;" 
+                               onclick="agregarEtiqueta('${etiqueta}')">${etiqueta}</span>`
+                    ).join('');
+                    
+                    sugerenciasDiv.innerHTML = `
+                        <small class="text-muted">Etiquetas existentes (clic para agregar):</small><br>
+                        ${etiquetasHtml}
+                    `;
+                }
+            })
+            .catch(error => console.log('Error cargando etiquetas:', error));
+        
+        // Validación del formulario
+        document.getElementById('contactoForm').addEventListener('submit', function(e) {
+            const nombre = document.getElementById('nombre').value.trim();
+            
+            if (!nombre) {
+                e.preventDefault();
+                alert('El nombre es obligatorio.');
+                document.getElementById('nombre').focus();
+                return false;
+            }
+        });
+    });
+    
+    function agregarEtiqueta(etiqueta) {
+        const etiquetasInput = document.getElementById('etiquetas');
+        const etiquetasActuales = etiquetasInput.value.trim();
+        
+        // Verificar si la etiqueta ya existe
+        const etiquetasArray = etiquetasActuales ? etiquetasActuales.split(',').map(e => e.trim()) : [];
+        
+        if (!etiquetasArray.includes(etiqueta)) {
+            const nuevasEtiquetas = etiquetasActuales ? `${etiquetasActuales}, ${etiqueta}` : etiqueta;
+            etiquetasInput.value = nuevasEtiquetas;
+        }
+    }
+</script>
+{% endblock %}

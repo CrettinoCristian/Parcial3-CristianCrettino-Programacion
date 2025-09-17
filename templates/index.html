@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}Inicio - Mini CRM Personal{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <!-- Hero Section -->
+        <div class="text-center mb-5">
+            <h1 class="display-4 fw-bold text-primary mb-3">
+                <i class="bi bi-person-rolodex"></i> Mini CRM Personal
+            </h1>
+            <p class="lead text-muted">
+                Gestiona tus contactos y sus interacciones de manera simple y eficiente
+            </p>
+        </div>
+        
+        {% if not current_user.is_authenticated %}
+            <!-- Welcome Section for Non-authenticated Users -->
+            <div class="row g-4 mb-5">
+                <div class="col-md-6">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body text-center">
+                            <i class="bi bi-people-fill text-primary" style="font-size: 3rem;"></i>
+                            <h5 class="card-title mt-3">Gestión de Contactos</h5>
+                            <p class="card-text text-muted">
+                                Organiza todos tus contactos con información detallada, etiquetas personalizadas y notas importantes.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body text-center">
+                            <i class="bi bi-chat-dots-fill text-success" style="font-size: 3rem;"></i>
+                            <h5 class="card-title mt-3">Historial de Interacciones</h5>
+                            <p class="card-text text-muted">
+                                Registra y consulta todas las interacciones con tus contactos para mantener un seguimiento completo.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body text-center">
+                            <i class="bi bi-search text-info" style="font-size: 3rem;"></i>
+                            <h5 class="card-title mt-3">Búsqueda Avanzada</h5>
+                            <p class="card-text text-muted">
+                                Encuentra rápidamente contactos por nombre, empresa, etiquetas o cualquier información relevante.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body text-center">
+                            <i class="bi bi-graph-up text-warning" style="font-size: 3rem;"></i>
+                            <h5 class="card-title mt-3">Dashboard y Métricas</h5>
+                            <p class="card-text text-muted">
+                                Visualiza estadísticas de tus contactos y obtén insights valiosos sobre tu red de contactos.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Call to Action -->
+            <div class="text-center">
+                <div class="card bg-light">
+                    <div class="card-body py-4">
+                        <h4 class="card-title mb-3">¿Listo para comenzar?</h4>
+                        <p class="card-text mb-4">
+                            Crea tu cuenta gratuita y comienza a organizar tus contactos de manera profesional.
+                        </p>
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                            <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg me-md-2">
+                                <i class="bi bi-person-plus"></i> Registrarse
+                            </a>
+                            <a href="{{ url_for('auth.login') }}" class="btn btn-outline-primary btn-lg">
+                                <i class="bi bi-box-arrow-in-right"></i> Iniciar Sesión
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <!-- Welcome Section for Authenticated Users -->
+            <div class="text-center">
+                <div class="card bg-primary text-white">
+                    <div class="card-body py-4">
+                        <h4 class="card-title mb-3">
+                            ¡Bienvenido de vuelta, {{ current_user.nombre }}!
+                        </h4>
+                        <p class="card-text mb-4">
+                            ¿Qué te gustaría hacer hoy?
+                        </p>
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                            <a href="{{ url_for('main.dashboard') }}" class="btn btn-light btn-lg me-md-2">
+                                <i class="bi bi-speedometer2"></i> Ver Dashboard
+                            </a>
+                            <a href="{{ url_for('contactos.listar') }}" class="btn btn-outline-light btn-lg me-md-2">
+                                <i class="bi bi-people"></i> Mis Contactos
+                            </a>
+                            <a href="{{ url_for('contactos.nuevo') }}" class="btn btn-success btn-lg">
+                                <i class="bi bi-person-plus"></i> Nuevo Contacto
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

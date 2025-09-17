@@ -1,0 +1,260 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {% if interaccion %}
+        Editar Interacción - {{ contacto.nombre }}
+    {% else %}
+        Nueva Interacción - {{ contacto.nombre }}
+    {% endif %} - Mini CRM Personal
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <!-- Información del contacto -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="me-3">
+                        <i class="bi bi-person-circle text-primary" style="font-size: 2rem;"></i>
+                    </div>
+                    <div>
+                        <h5 class="mb-1">
+                            <a href="{{ url_for('contactos.ver', id=contacto.id) }}" 
+                               class="text-decoration-none">
+                                {{ contacto.nombre }}
+                            </a>
+                        </h5>
+                        <div class="text-muted small">
+                            {% if contacto.empresa %}
+                                <i class="bi bi-building"></i> {{ contacto.empresa }}
+                            {% endif %}
+                            {% if contacto.email %}
+                                <span class="ms-3">
+                                    <i class="bi bi-envelope"></i> {{ contacto.email }}
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Formulario de interacción -->
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    {% if interaccion %}
+                        <i class="bi bi-pencil"></i> Editar Interacción
+                    {% else %}
+                        <i class="bi bi-chat-dots"></i> Nueva Interacción
+                    {% endif %}
+                </h4>
+            </div>
+            
+            <div class="card-body">
+                <form method="POST" id="interaccionForm">
+                    <div class="mb-4">
+                        <label for="fecha" class="form-label">
+                            <i class="bi bi-calendar"></i> Fecha y Hora de la Interacción
+                        </label>
+                        <input type="datetime-local" 
+                               class="form-control" 
+                               id="fecha" 
+                               name="fecha" 
+                               value="{% if interaccion %}{{ interaccion.fecha.strftime('%Y-%m-%dT%H:%M') }}{% endif %}">
+                        <div class="form-text">
+                            Si no especificas una fecha, se usará la fecha y hora actual.
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="nota" class="form-label">
+                            <i class="bi bi-journal-text"></i> Descripción de la Interacción *
+                        </label>
+                        <textarea class="form-control" 
+                                  id="nota" 
+                                  name="nota" 
+                                  rows="6" 
+                                  required 
+                                  placeholder="Describe qué ocurrió en esta interacción...&#10;&#10;Ejemplos:&#10;- Llamada telefónica para discutir el proyecto&#10;- Reunión en la oficina sobre la propuesta&#10;- Email enviado con la cotización&#10;- Seguimiento del estado del pedido">{{ interaccion.nota if interaccion else request.form.nota or '' }}</textarea>
+                        <div class="form-text">
+                            Sé específico sobre el tipo de interacción, temas tratados y próximos pasos.
+                        </div>
+                    </div>
+                    
+                    <!-- Sugerencias de plantillas -->
+                    <div class="mb-4">
+                        <h6 class="text-muted mb-2">
+                            <i class="bi bi-lightbulb"></i> Plantillas Rápidas
+                        </h6>
+                        <div class="row g-2">
+                            <div class="col-md-6">
+                                <button type="button" 
+                                        class="btn btn-outline-secondary btn-sm w-100" 
+                                        onclick="aplicarPlantilla('llamada')">
+                                    <i class="bi bi-telephone"></i> Llamada Telefónica
+                                </button>
+                            </div>
+                            <div class="col-md-6">
+                                <button type="button" 
+                                        class="btn btn-outline-secondary btn-sm w-100" 
+                                        onclick="aplicarPlantilla('reunion')">
+                                    <i class="bi bi-people"></i> Reunión Presencial
+                                </button>
+                            </div>
+                            <div class="col-md-6">
+                                <button type="button" 
+                                        class="btn btn-outline-secondary btn-sm w-100" 
+                                        onclick="aplicarPlantilla('email')">
+                                    <i class="bi bi-envelope"></i> Intercambio de Emails
+                                </button>
+                            </div>
+                            <div class="col-md-6">
+                                <button type="button" 
+                                        class="btn btn-outline-secondary btn-sm w-100" 
+                                        onclick="aplicarPlantilla('seguimiento')">
+                                    <i class="bi bi-arrow-repeat"></i> Seguimiento
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Botones -->
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('interacciones.listar', contacto_id=contacto.id) }}" 
+                           class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left"></i> Cancelar
+                        </a>
+                        
+                        <button type="submit" class="btn btn-success">
+                            {% if interaccion %}
+                                <i class="bi bi-check-lg"></i> Actualizar Interacción
+                            {% else %}
+                                <i class="bi bi-plus-lg"></i> Guardar Interacción
+                            {% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        {% if interaccion %}
+            <!-- Información adicional para edición -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="bi bi-info-circle"></i> Información de la Interacción
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <small class="text-muted">
+                                <strong>Registrada:</strong> {{ interaccion.fecha_creacion.strftime('%d/%m/%Y %H:%M') }}
+                            </small>
+                        </div>
+                        <div class="col-md-6">
+                            <small class="text-muted">
+                                <strong>ID:</strong> #{{ interaccion.id }}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Auto-focus en el campo de nota
+        document.getElementById('nota').focus();
+        
+        // Establecer fecha actual si no hay fecha
+        const fechaInput = document.getElementById('fecha');
+        if (!fechaInput.value) {
+            const ahora = new Date();
+            const fechaLocal = new Date(ahora.getTime() - ahora.getTimezoneOffset() * 60000);
+            fechaInput.value = fechaLocal.toISOString().slice(0, 16);
+        }
+        
+        // Validación del formulario
+        document.getElementById('interaccionForm').addEventListener('submit', function(e) {
+            const nota = document.getElementById('nota').value.trim();
+            
+            if (!nota) {
+                e.preventDefault();
+                alert('La descripción de la interacción es obligatoria.');
+                document.getElementById('nota').focus();
+                return false;
+            }
+            
+            if (nota.length < 10) {
+                e.preventDefault();
+                alert('La descripción debe tener al menos 10 caracteres.');
+                document.getElementById('nota').focus();
+                return false;
+            }
+        });
+    });
+    
+    // Plantillas predefinidas
+    const plantillas = {
+        llamada: `Llamada telefónica con {{ contacto.nombre }}\n\nTemas tratados:\n- \n\nAcuerdos:\n- \n\nPróximos pasos:\n- `,
+        reunion: `Reunión presencial con {{ contacto.nombre }}\n\nUbicación: \nDuración: \n\nTemas discutidos:\n- \n\nDecisiones tomadas:\n- \n\nAcciones a seguir:\n- `,
+        email: `Intercambio de emails con {{ contacto.nombre }}\n\nAsunto: \n\nPuntos principales:\n- \n\nRespuesta requerida:\n- \n\nSeguimiento programado: `,
+        seguimiento: `Seguimiento con {{ contacto.nombre }}\n\nMotivo del seguimiento: \n\nEstado actual: \n\nPróximas acciones:\n- \n\nFecha próximo contacto: `
+    };
+    
+    function aplicarPlantilla(tipo) {
+        const notaTextarea = document.getElementById('nota');
+        const plantilla = plantillas[tipo];
+        
+        if (plantilla) {
+            // Si el textarea está vacío, aplicar la plantilla completa
+            if (!notaTextarea.value.trim()) {
+                notaTextarea.value = plantilla;
+            } else {
+                // Si ya hay contenido, preguntar si quiere reemplazar
+                if (confirm('¿Quieres reemplazar el contenido actual con esta plantilla?')) {
+                    notaTextarea.value = plantilla;
+                }
+            }
+            
+            // Enfocar el textarea y posicionar el cursor
+            notaTextarea.focus();
+            
+            // Posicionar el cursor en el primer campo vacío
+            const primerCampo = plantilla.indexOf('- ');
+            if (primerCampo !== -1) {
+                notaTextarea.setSelectionRange(primerCampo + 2, primerCampo + 2);
+            }
+        }
+    }
+    
+    // Contador de caracteres
+    const notaTextarea = document.getElementById('nota');
+    const contadorDiv = document.createElement('div');
+    contadorDiv.className = 'form-text text-end';
+    notaTextarea.parentNode.appendChild(contadorDiv);
+    
+    function actualizarContador() {
+        const longitud = notaTextarea.value.length;
+        contadorDiv.textContent = `${longitud} caracteres`;
+        
+        if (longitud < 10) {
+            contadorDiv.className = 'form-text text-end text-danger';
+        } else if (longitud > 500) {
+            contadorDiv.className = 'form-text text-end text-warning';
+        } else {
+            contadorDiv.className = 'form-text text-end text-muted';
+        }
+    }
+    
+    notaTextarea.addEventListener('input', actualizarContador);
+    actualizarContador(); // Ejecutar al cargar
+</script>
+{% endblock %}

@@ -1,0 +1,341 @@
+{% extends "base.html" %}
+
+{% block title %}Interacción - {{ interaccion.contacto.nombre }} - Mini CRM Personal{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <!-- Información del contacto -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center">
+                        <div class="me-3">
+                            <i class="bi bi-person-circle text-primary" style="font-size: 2.5rem;"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-1">
+                                <a href="{{ url_for('contactos.ver', id=interaccion.contacto.id) }}" 
+                                   class="text-decoration-none">
+                                    {{ interaccion.contacto.nombre }}
+                                </a>
+                            </h5>
+                            <div class="text-muted">
+                                {% if interaccion.contacto.empresa %}
+                                    <i class="bi bi-building"></i> {{ interaccion.contacto.empresa }}
+                                {% endif %}
+                                {% if interaccion.contacto.email %}
+                                    <span class="ms-3">
+                                        <i class="bi bi-envelope"></i> {{ interaccion.contacto.email }}
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <a href="{{ url_for('contactos.ver', id=interaccion.contacto.id) }}" 
+                           class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-eye"></i> Ver Contacto
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Detalles de la interacción -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">
+                    <i class="bi bi-chat-dots"></i> Detalles de la Interacción
+                </h4>
+                <div class="btn-group" role="group">
+                    <a href="{{ url_for('interacciones.editar', id=interaccion.id) }}" 
+                       class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-pencil"></i> Editar
+                    </a>
+                    <form method="POST" 
+                          action="{{ url_for('interacciones.eliminar', id=interaccion.id) }}"
+                          onsubmit="return confirm('¿Estás seguro de eliminar esta interacción?');"
+                          class="d-inline">
+                        <button type="submit" class="btn btn-outline-danger btn-sm">
+                            <i class="bi bi-trash"></i> Eliminar
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="card-body">
+                <!-- Fecha y hora -->
+                <div class="mb-4">
+                    <h6 class="text-primary mb-2">
+                        <i class="bi bi-calendar"></i> Fecha y Hora
+                    </h6>
+                    <div class="bg-light p-3 rounded">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>{{ interaccion.fecha.strftime('%A, %d de %B de %Y') }}</strong>
+                                <br>
+                                <span class="text-muted">{{ interaccion.fecha.strftime('%H:%M') }}</span>
+                            </div>
+                            <div class="text-end">
+                                <small class="text-muted">
+                                    {% set dias_transcurridos = (now() - interaccion.fecha).days %}
+                                    {% if dias_transcurridos == 0 %}
+                                        Hoy
+                                    {% elif dias_transcurridos == 1 %}
+                                        Ayer
+                                    {% elif dias_transcurridos < 7 %}
+                                        Hace {{ dias_transcurridos }} días
+                                    {% elif dias_transcurridos < 30 %}
+                                        Hace {{ (dias_transcurridos / 7)|round|int }} semanas
+                                    {% else %}
+                                        Hace {{ (dias_transcurridos / 30)|round|int }} meses
+                                    {% endif %}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Contenido de la interacción -->
+                <div class="mb-4">
+                    <h6 class="text-success mb-2">
+                        <i class="bi bi-journal-text"></i> Descripción
+                    </h6>
+                    <div class="border-start border-success border-3 ps-4">
+                        <div class="bg-light p-4 rounded">
+                            <p class="mb-0 lh-lg">{{ interaccion.nota|nl2br|safe }}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Metadatos -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-info mb-2">
+                            <i class="bi bi-info-circle"></i> Información del Sistema
+                        </h6>
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <i class="bi bi-hash text-muted"></i>
+                                <span class="ms-2">
+                                    <strong>ID:</strong> #{{ interaccion.id }}
+                                </span>
+                            </li>
+                            <li class="mb-2">
+                                <i class="bi bi-calendar-plus text-muted"></i>
+                                <span class="ms-2">
+                                    <strong>Registrada:</strong> {{ interaccion.fecha_creacion.strftime('%d/%m/%Y %H:%M') }}
+                                </span>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <h6 class="text-warning mb-2">
+                            <i class="bi bi-graph-up"></i> Estadísticas
+                        </h6>
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <i class="bi bi-chat-dots text-muted"></i>
+                                <span class="ms-2">
+                                    <strong>Total interacciones:</strong> {{ interaccion.contacto.interacciones|length }}
+                                </span>
+                            </li>
+                            <li class="mb-2">
+                                <i class="bi bi-clock text-muted"></i>
+                                <span class="ms-2">
+                                    <strong>Última interacción:</strong> {{ interaccion.contacto.ultima_interaccion.strftime('%d/%m/%Y') }}
+                                </span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sidebar con acciones y navegación -->
+    <div class="col-lg-4">
+        <!-- Acciones rápidas -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-lightning"></i> Acciones Rápidas
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('interacciones.editar', id=interaccion.id) }}" 
+                       class="btn btn-outline-primary">
+                        <i class="bi bi-pencil"></i> Editar Interacción
+                    </a>
+                    
+                    <a href="{{ url_for('interacciones.nueva', contacto_id=interaccion.contacto.id) }}" 
+                       class="btn btn-success">
+                        <i class="bi bi-chat-dots"></i> Nueva Interacción
+                    </a>
+                    
+                    <a href="{{ url_for('contactos.ver', id=interaccion.contacto.id) }}" 
+                       class="btn btn-outline-info">
+                        <i class="bi bi-person"></i> Ver Contacto
+                    </a>
+                    
+                    <a href="{{ url_for('interacciones.listar', contacto_id=interaccion.contacto.id) }}" 
+                       class="btn btn-outline-secondary">
+                        <i class="bi bi-list"></i> Todas las Interacciones
+                    </a>
+                    
+                    <hr>
+                    
+                    <form method="POST" 
+                          action="{{ url_for('interacciones.eliminar', id=interaccion.id) }}"
+                          onsubmit="return confirm('¿Estás seguro de eliminar esta interacción? Esta acción no se puede deshacer.');"
+                          class="d-inline">
+                        <button type="submit" class="btn btn-outline-danger w-100">
+                            <i class="bi bi-trash"></i> Eliminar Interacción
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Navegación -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="bi bi-compass"></i> Navegación
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('interacciones.listar', contacto_id=interaccion.contacto.id) }}" 
+                       class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-arrow-left"></i> Volver a Interacciones
+                    </a>
+                    
+                    <a href="{{ url_for('contactos.ver', id=interaccion.contacto.id) }}" 
+                       class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-person"></i> Ver Contacto
+                    </a>
+                    
+                    <a href="{{ url_for('interacciones.recientes') }}" 
+                       class="btn btn-outline-info btn-sm">
+                        <i class="bi bi-clock-history"></i> Interacciones Recientes
+                    </a>
+                    
+                    <a href="{{ url_for('main.dashboard') }}" 
+                       class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-speedometer2"></i> Ir al Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Información del contacto -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="bi bi-person-lines-fill"></i> Resumen del Contacto
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-3">
+                    <i class="bi bi-person-circle text-primary" style="font-size: 3rem;"></i>
+                    <h6 class="mt-2 mb-1">{{ interaccion.contacto.nombre }}</h6>
+                    {% if interaccion.contacto.empresa %}
+                        <small class="text-muted">{{ interaccion.contacto.empresa }}</small>
+                    {% endif %}
+                </div>
+                
+                <div class="small">
+                    {% if interaccion.contacto.email %}
+                        <p class="mb-2">
+                            <i class="bi bi-envelope text-muted"></i>
+                            <a href="mailto:{{ interaccion.contacto.email }}" 
+                               class="text-decoration-none ms-1">
+                                {{ interaccion.contacto.email }}
+                            </a>
+                        </p>
+                    {% endif %}
+                    
+                    {% if interaccion.contacto.telefono %}
+                        <p class="mb-2">
+                            <i class="bi bi-telephone text-muted"></i>
+                            <a href="tel:{{ interaccion.contacto.telefono }}" 
+                               class="text-decoration-none ms-1">
+                                {{ interaccion.contacto.telefono }}
+                            </a>
+                        </p>
+                    {% endif %}
+                    
+                    {% if interaccion.contacto.etiquetas %}
+                        <div class="mt-3">
+                            <small class="text-muted d-block mb-1">Etiquetas:</small>
+                            {% for etiqueta in interaccion.contacto.etiquetas %}
+                                <span class="badge bg-secondary me-1 mb-1">{{ etiqueta }}</span>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    // Función para copiar el ID de la interacción
+    function copiarId() {
+        const id = '{{ interaccion.id }}';
+        navigator.clipboard.writeText(id).then(function() {
+            // Mostrar feedback visual
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="bi bi-check"></i> Copiado';
+            btn.classList.add('btn-success');
+            btn.classList.remove('btn-outline-secondary');
+            
+            setTimeout(function() {
+                btn.innerHTML = originalText;
+                btn.classList.remove('btn-success');
+                btn.classList.add('btn-outline-secondary');
+            }, 2000);
+        });
+    }
+    
+    // Función para imprimir la interacción
+    function imprimirInteraccion() {
+        window.print();
+    }
+    
+    // Agregar botones adicionales si es necesario
+    document.addEventListener('DOMContentLoaded', function() {
+        // Aquí se pueden agregar funcionalidades adicionales
+        console.log('Interacción #{{ interaccion.id }} cargada correctamente');
+    });
+</script>
+
+<style>
+    @media print {
+        .btn, .card-header .btn-group, nav, footer {
+            display: none !important;
+        }
+        
+        .card {
+            border: none !important;
+            box-shadow: none !important;
+        }
+        
+        .col-lg-4 {
+            display: none !important;
+        }
+        
+        .col-lg-8 {
+            width: 100% !important;
+        }
+    }
+</style>
+{% endblock %}

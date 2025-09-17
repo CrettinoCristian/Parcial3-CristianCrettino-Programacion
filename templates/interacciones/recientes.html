@@ -1,0 +1,356 @@
+{% extends "base.html" %}
+
+{% block title %}Interacciones Recientes - Mini CRM Personal{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h2">
+        <i class="bi bi-clock-history"></i> Interacciones Recientes
+        <span class="badge bg-info">{{ interacciones.total }}</span>
+    </h1>
+    <div>
+        <a href="{{ url_for('contactos.listar') }}" class="btn btn-outline-primary me-2">
+            <i class="bi bi-people"></i> Ver Contactos
+        </a>
+        <a href="{{ url_for('contactos.nuevo') }}" class="btn btn-outline-success me-2">
+            <i class="bi bi-person-plus"></i> Nuevo Contacto
+        </a>
+        <div class="btn-group">
+            <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown">
+                <i class="bi bi-plus-circle"></i> Nueva Interacción
+            </button>
+            <ul class="dropdown-menu">
+                <li><h6 class="dropdown-header">Selecciona un contacto:</h6></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="{{ url_for('contactos.listar') }}?action=select_for_interaction">
+                    <i class="bi bi-search"></i> Buscar contacto
+                </a></li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- Filtros rápidos -->
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h6 class="mb-2">
+                    <i class="bi bi-funnel"></i> Filtros Rápidos
+                </h6>
+                <div class="btn-group" role="group">
+                    <input type="radio" class="btn-check" name="filtro" id="todos" autocomplete="off" checked>
+                    <label class="btn btn-outline-secondary btn-sm" for="todos">Todas</label>
+                    
+                    <input type="radio" class="btn-check" name="filtro" id="hoy" autocomplete="off">
+                    <label class="btn btn-outline-primary btn-sm" for="hoy">Hoy</label>
+                    
+                    <input type="radio" class="btn-check" name="filtro" id="semana" autocomplete="off">
+                    <label class="btn btn-outline-success btn-sm" for="semana">Esta Semana</label>
+                    
+                    <input type="radio" class="btn-check" name="filtro" id="mes" autocomplete="off">
+                    <label class="btn btn-outline-info btn-sm" for="mes">Este Mes</label>
+                </div>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <small class="text-muted">
+                    Mostrando las interacciones más recientes de todos tus contactos
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Lista de interacciones -->
+{% if interacciones.items %}
+    <div class="row">
+        {% for interaccion in interacciones.items %}
+            <div class="col-12 mb-3 interaccion-item" 
+                 data-fecha="{{ interaccion.fecha.isoformat() }}">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row">
+                            <!-- Información de la interacción -->
+                            <div class="col-md-8">
+                                <div class="d-flex align-items-start">
+                                    <div class="me-3">
+                                        <i class="bi bi-chat-dots-fill text-primary" style="font-size: 1.5rem;"></i>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <!-- Contacto -->
+                                        <div class="mb-2">
+                                            <h6 class="mb-1">
+                                                <a href="{{ url_for('contactos.ver', id=interaccion.contacto.id) }}" 
+                                                   class="text-decoration-none">
+                                                    <i class="bi bi-person-circle"></i> {{ interaccion.contacto.nombre }}
+                                                </a>
+                                            </h6>
+                                            {% if interaccion.contacto.empresa %}
+                                                <small class="text-muted">
+                                                    <i class="bi bi-building"></i> {{ interaccion.contacto.empresa }}
+                                                </small>
+                                            {% endif %}
+                                        </div>
+                                        
+                                        <!-- Contenido de la interacción -->
+                                        <div class="border-start border-primary border-2 ps-3">
+                                            <p class="mb-2">
+                                                {{ interaccion.nota[:200] }}{% if interaccion.nota|length > 200 %}...{% endif %}
+                                            </p>
+                                            {% if interaccion.nota|length > 200 %}
+                                                <a href="{{ url_for('interacciones.ver', id=interaccion.id) }}" 
+                                                   class="btn btn-sm btn-outline-primary">
+                                                    <i class="bi bi-eye"></i> Ver completa
+                                                </a>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Fecha y acciones -->
+                            <div class="col-md-4">
+                                <div class="text-md-end">
+                                    <!-- Fecha -->
+                                    <div class="mb-3">
+                                        <div class="badge bg-light text-dark mb-1">
+                                            <i class="bi bi-calendar"></i> 
+                                            {{ interaccion.fecha.strftime('%d/%m/%Y') }}
+                                        </div>
+                                        <br>
+                                        <small class="text-muted">
+                                            <i class="bi bi-clock"></i> 
+                                            {{ interaccion.fecha.strftime('%H:%M') }}
+                                        </small>
+                                        <br>
+                                        <small class="text-muted tiempo-transcurrido" 
+                                               data-fecha="{{ interaccion.fecha.isoformat() }}">
+                                            <!-- Se llenará con JavaScript -->
+                                        </small>
+                                    </div>
+                                    
+                                    <!-- Acciones -->
+                                    <div class="btn-group-vertical d-grid gap-1" role="group">
+                                        <a href="{{ url_for('interacciones.ver', id=interaccion.id) }}" 
+                                           class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-eye"></i> Ver
+                                        </a>
+                                        <a href="{{ url_for('interacciones.editar', id=interaccion.id) }}" 
+                                           class="btn btn-sm btn-outline-secondary">
+                                            <i class="bi bi-pencil"></i> Editar
+                                        </a>
+                                        <a href="{{ url_for('interacciones.nueva', contacto_id=interaccion.contacto.id) }}" 
+                                           class="btn btn-sm btn-success">
+                                            <i class="bi bi-plus"></i> Nueva
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Footer con información adicional -->
+                    <div class="card-footer text-muted small">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="bi bi-hash"></i> ID: {{ interaccion.id }}
+                                <span class="ms-3">
+                                    <i class="bi bi-calendar-plus"></i> 
+                                    Registrada: {{ interaccion.fecha_creacion.strftime('%d/%m/%Y %H:%M') }}
+                                </span>
+                            </div>
+                            <div>
+                                <a href="{{ url_for('interacciones.listar', contacto_id=interaccion.contacto.id) }}" 
+                                   class="text-decoration-none">
+                                    <i class="bi bi-list"></i> 
+                                    Ver todas ({{ interaccion.contacto.interacciones|length }})
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Paginación -->
+    {% if interacciones.pages > 1 %}
+        <nav aria-label="Paginación de interacciones">
+            <ul class="pagination justify-content-center">
+                {% if interacciones.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" 
+                           href="{{ url_for('interacciones.recientes', page=interacciones.prev_num) }}">
+                            <i class="bi bi-chevron-left"></i> Anterior
+                        </a>
+                    </li>
+                {% endif %}
+                
+                {% for page_num in interacciones.iter_pages() %}
+                    {% if page_num %}
+                        {% if page_num != interacciones.page %}
+                            <li class="page-item">
+                                <a class="page-link" 
+                                   href="{{ url_for('interacciones.recientes', page=page_num) }}">
+                                    {{ page_num }}
+                                </a>
+                            </li>
+                        {% else %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ page_num }}</span>
+                            </li>
+                        {% endif %}
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">...</span>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if interacciones.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" 
+                           href="{{ url_for('interacciones.recientes', page=interacciones.next_num) }}">
+                            Siguiente <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    {% endif %}
+{% else %}
+    <!-- Estado vacío -->
+    <div class="text-center py-5">
+        <i class="bi bi-chat-x text-muted" style="font-size: 4rem;"></i>
+        <h3 class="text-muted mt-3">No hay interacciones registradas</h3>
+        <p class="text-muted">
+            Comienza agregando contactos y registrando tus interacciones con ellos.
+        </p>
+        <div class="d-flex justify-content-center gap-2">
+            <a href="{{ url_for('contactos.nuevo') }}" class="btn btn-primary">
+                <i class="bi bi-person-plus"></i> Agregar Contacto
+            </a>
+            <a href="{{ url_for('contactos.listar') }}" class="btn btn-outline-primary">
+                <i class="bi bi-people"></i> Ver Contactos
+            </a>
+        </div>
+    </div>
+{% endif %}
+
+<!-- Navegación rápida -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-0">
+                            <i class="bi bi-compass"></i> Navegación Rápida
+                        </h6>
+                    </div>
+                    
+                    <div>
+                        <a href="{{ url_for('main.dashboard') }}" 
+                           class="btn btn-outline-primary btn-sm me-2">
+                            <i class="bi bi-speedometer2"></i> Dashboard
+                        </a>
+                        <a href="{{ url_for('contactos.listar') }}" 
+                           class="btn btn-outline-info btn-sm me-2">
+                            <i class="bi bi-people"></i> Contactos
+                        </a>
+                        <a href="{{ url_for('contactos.nuevo') }}" 
+                           class="btn btn-success btn-sm">
+                            <i class="bi bi-person-plus"></i> Nuevo Contacto
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Calcular y mostrar tiempo transcurrido
+        function actualizarTiempoTranscurrido() {
+            const elementos = document.querySelectorAll('.tiempo-transcurrido');
+            elementos.forEach(elemento => {
+                const fecha = new Date(elemento.dataset.fecha);
+                const ahora = new Date();
+                const diferencia = ahora - fecha;
+                const minutos = Math.floor(diferencia / (1000 * 60));
+                const horas = Math.floor(diferencia / (1000 * 60 * 60));
+                const dias = Math.floor(diferencia / (1000 * 60 * 60 * 24));
+                
+                let texto = '';
+                if (minutos < 60) {
+                    texto = `Hace ${minutos} min`;
+                } else if (horas < 24) {
+                    texto = `Hace ${horas} h`;
+                } else if (dias === 1) {
+                    texto = 'Ayer';
+                } else if (dias < 7) {
+                    texto = `Hace ${dias} días`;
+                } else if (dias < 30) {
+                    const semanas = Math.floor(dias / 7);
+                    texto = `Hace ${semanas} sem`;
+                } else {
+                    const meses = Math.floor(dias / 30);
+                    texto = `Hace ${meses} mes${meses > 1 ? 'es' : ''}`;
+                }
+                
+                elemento.textContent = texto;
+            });
+        }
+        
+        // Ejecutar al cargar y cada minuto
+        actualizarTiempoTranscurrido();
+        setInterval(actualizarTiempoTranscurrido, 60000);
+        
+        // Filtros por fecha
+        const filtros = document.querySelectorAll('input[name="filtro"]');
+        const interacciones = document.querySelectorAll('.interaccion-item');
+        
+        filtros.forEach(filtro => {
+            filtro.addEventListener('change', function() {
+                const tipoFiltro = this.id;
+                const ahora = new Date();
+                
+                interacciones.forEach(item => {
+                    const fechaInteraccion = new Date(item.dataset.fecha);
+                    let mostrar = true;
+                    
+                    switch(tipoFiltro) {
+                        case 'hoy':
+                            mostrar = fechaInteraccion.toDateString() === ahora.toDateString();
+                            break;
+                        case 'semana':
+                            const inicioSemana = new Date(ahora);
+                            inicioSemana.setDate(ahora.getDate() - ahora.getDay());
+                            inicioSemana.setHours(0, 0, 0, 0);
+                            mostrar = fechaInteraccion >= inicioSemana;
+                            break;
+                        case 'mes':
+                            mostrar = fechaInteraccion.getMonth() === ahora.getMonth() && 
+                                     fechaInteraccion.getFullYear() === ahora.getFullYear();
+                            break;
+                        default:
+                            mostrar = true;
+                    }
+                    
+                    item.style.display = mostrar ? 'block' : 'none';
+                });
+                
+                // Actualizar contador
+                const visibles = document.querySelectorAll('.interaccion-item[style*="block"], .interaccion-item:not([style*="none"])');
+                const badge = document.querySelector('.badge.bg-info');
+                if (badge) {
+                    badge.textContent = visibles.length;
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

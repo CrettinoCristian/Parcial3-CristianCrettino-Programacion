@@ -1,0 +1,254 @@
+{% extends "base.html" %}
+
+{% block title %}Interacciones - {{ contacto.nombre }} - Mini CRM Personal{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h2 mb-1">
+            <i class="bi bi-chat-dots"></i> Interacciones
+        </h1>
+        <p class="text-muted mb-0">
+            <i class="bi bi-person-circle"></i> 
+            <a href="{{ url_for('contactos.ver', id=contacto.id) }}" class="text-decoration-none">
+                {{ contacto.nombre }}
+            </a>
+            <span class="badge bg-primary ms-2">{{ interacciones.total }} interacciones</span>
+        </p>
+    </div>
+    <div>
+        <a href="{{ url_for('interacciones.nueva', contacto_id=contacto.id) }}" 
+           class="btn btn-success">
+            <i class="bi bi-chat-dots"></i> Nueva Interacción
+        </a>
+    </div>
+</div>
+
+<!-- Información del contacto -->
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h5 class="mb-1">{{ contacto.nombre }}</h5>
+                <div class="text-muted">
+                    {% if contacto.empresa %}
+                        <i class="bi bi-building"></i> {{ contacto.empresa }}
+                    {% endif %}
+                    {% if contacto.email %}
+                        <span class="ms-3">
+                            <i class="bi bi-envelope"></i> {{ contacto.email }}
+                        </span>
+                    {% endif %}
+                    {% if contacto.telefono %}
+                        <span class="ms-3">
+                            <i class="bi bi-telephone"></i> {{ contacto.telefono }}
+                        </span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <a href="{{ url_for('contactos.ver', id=contacto.id) }}" 
+                   class="btn btn-outline-primary btn-sm">
+                    <i class="bi bi-eye"></i> Ver Contacto
+                </a>
+                <a href="{{ url_for('contactos.editar', id=contacto.id) }}" 
+                   class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-pencil"></i> Editar
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Lista de interacciones -->
+{% if interacciones.items %}
+    <div class="row">
+        {% for interaccion in interacciones.items %}
+            <div class="col-12 mb-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="flex-grow-1">
+                                <div class="d-flex align-items-center mb-2">
+                                    <i class="bi bi-calendar text-primary me-2"></i>
+                                    <strong>{{ interaccion.fecha.strftime('%d/%m/%Y %H:%M') }}</strong>
+                                    <small class="text-muted ms-2">
+                                        ({{ (now() - interaccion.fecha).days }} días atrás)
+                                    </small>
+                                </div>
+                                
+                                <div class="border-start border-primary border-3 ps-3">
+                                    <p class="mb-0">{{ interaccion.nota|nl2br|safe }}</p>
+                                </div>
+                            </div>
+                            
+                            <div class="ms-3">
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" 
+                                            type="button" 
+                                            data-bs-toggle="dropdown">
+                                        <i class="bi bi-three-dots"></i>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li>
+                                            <a class="dropdown-item" 
+                                               href="{{ url_for('interacciones.ver', id=interaccion.id) }}">
+                                                <i class="bi bi-eye"></i> Ver detalles
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" 
+                                               href="{{ url_for('interacciones.editar', id=interaccion.id) }}">
+                                                <i class="bi bi-pencil"></i> Editar
+                                            </a>
+                                        </li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li>
+                                            <form method="POST" 
+                                                  action="{{ url_for('interacciones.eliminar', id=interaccion.id) }}"
+                                                  onsubmit="return confirm('¿Estás seguro de eliminar esta interacción?');"
+                                                  class="d-inline">
+                                                <button type="submit" class="dropdown-item text-danger">
+                                                    <i class="bi bi-trash"></i> Eliminar
+                                                </button>
+                                            </form>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card-footer text-muted small">
+                        <i class="bi bi-clock"></i> 
+                        Registrada el {{ interaccion.fecha_creacion.strftime('%d/%m/%Y %H:%M') }}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Paginación -->
+    {% if interacciones.pages > 1 %}
+        <nav aria-label="Paginación de interacciones">
+            <ul class="pagination justify-content-center">
+                {% if interacciones.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" 
+                           href="{{ url_for('interacciones.listar', contacto_id=contacto.id, page=interacciones.prev_num) }}">
+                            Anterior
+                        </a>
+                    </li>
+                {% endif %}
+                
+                {% for page_num in interacciones.iter_pages() %}
+                    {% if page_num %}
+                        {% if page_num != interacciones.page %}
+                            <li class="page-item">
+                                <a class="page-link" 
+                                   href="{{ url_for('interacciones.listar', contacto_id=contacto.id, page=page_num) }}">
+                                    {{ page_num }}
+                                </a>
+                            </li>
+                        {% else %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ page_num }}</span>
+                            </li>
+                        {% endif %}
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">...</span>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if interacciones.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" 
+                           href="{{ url_for('interacciones.listar', contacto_id=contacto.id, page=interacciones.next_num) }}">
+                            Siguiente
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    {% endif %}
+{% else %}
+    <!-- Estado vacío -->
+    <div class="text-center py-5">
+        <i class="bi bi-chat-x text-muted" style="font-size: 4rem;"></i>
+        <h3 class="text-muted mt-3">No hay interacciones registradas</h3>
+        <p class="text-muted">
+            Comienza registrando la primera interacción con {{ contacto.nombre }}.
+        </p>
+        <a href="{{ url_for('interacciones.nueva', contacto_id=contacto.id) }}" 
+           class="btn btn-success btn-lg">
+            <i class="bi bi-chat-dots"></i> Agregar Primera Interacción
+        </a>
+    </div>
+{% endif %}
+
+<!-- Navegación -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <a href="{{ url_for('contactos.ver', id=contacto.id) }}" 
+                           class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left"></i> Volver al Contacto
+                        </a>
+                    </div>
+                    
+                    <div>
+                        <a href="{{ url_for('contactos.listar') }}" 
+                           class="btn btn-outline-primary me-2">
+                            <i class="bi bi-people"></i> Todos los Contactos
+                        </a>
+                        <a href="{{ url_for('interacciones.recientes') }}" 
+                           class="btn btn-outline-info">
+                            <i class="bi bi-clock-history"></i> Interacciones Recientes
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    // Función para calcular tiempo transcurrido
+    function calcularTiempoTranscurrido() {
+        const elementos = document.querySelectorAll('[data-fecha]');
+        elementos.forEach(elemento => {
+            const fecha = new Date(elemento.dataset.fecha);
+            const ahora = new Date();
+            const diferencia = ahora - fecha;
+            const dias = Math.floor(diferencia / (1000 * 60 * 60 * 24));
+            
+            let texto = '';
+            if (dias === 0) {
+                texto = 'Hoy';
+            } else if (dias === 1) {
+                texto = 'Ayer';
+            } else if (dias < 7) {
+                texto = `Hace ${dias} días`;
+            } else if (dias < 30) {
+                const semanas = Math.floor(dias / 7);
+                texto = `Hace ${semanas} semana${semanas > 1 ? 's' : ''}`;
+            } else {
+                const meses = Math.floor(dias / 30);
+                texto = `Hace ${meses} mes${meses > 1 ? 'es' : ''}`;
+            }
+            
+            elemento.textContent = `(${texto})`;
+        });
+    }
+    
+    // Ejecutar al cargar la página
+    document.addEventListener('DOMContentLoaded', calcularTiempoTranscurrido);
+</script>
+{% endblock %}
