@@ -12,8 +12,10 @@ app = create_app('production')
 
 # Inicializar la base de datos SQLite si no existe
 with app.app_context():
-    db.create_all()
+    try:
+        db.create_all()
+    except Exception as e:
+        print(f"Error inicializando base de datos: {e}")
 
-# Esta es la función que Vercel utilizará como punto de entrada
-if __name__ == "__main__":
-    app.run()
+# Vercel necesita que la aplicación se exporte directamente
+# No usar if __name__ == "__main__" en funciones serverless
