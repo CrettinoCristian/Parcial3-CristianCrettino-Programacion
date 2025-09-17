@@ -120,7 +120,7 @@ def create_sample_data(app):
                     notas=contacto_data["notas"],
                     fecha_creacion=datetime.utcnow() - timedelta(days=len(contactos_creados) * 2)
                 )
-                contacto.etiquetas_list = contacto_data["etiquetas"]
+                contacto.etiquetas = contacto_data["etiquetas"]
                 db.session.add(contacto)
                 contactos_creados.append(contacto)
             

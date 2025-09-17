@@ -136,9 +136,9 @@
                             {% endif %}
                         </div>
                         
-                        {% if contacto.etiquetas_list %}
+                        {% if contacto.etiquetas %}
                             <div class="mb-2">
-                                {% for etiqueta in contacto.etiquetas_list %}
+                                {% for etiqueta in contacto.etiquetas %}
                                     <span class="badge bg-secondary me-1">{{ etiqueta }}</span>
                                 {% endfor %}
                             </div>

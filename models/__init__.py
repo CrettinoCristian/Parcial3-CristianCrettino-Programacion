@@ -40,7 +40,7 @@ class Contacto(db.Model):
     email = db.Column(db.String(120), nullable=True)
     telefono = db.Column(db.String(20), nullable=True)
     empresa = db.Column(db.String(100), nullable=True)
-    etiquetas = db.Column(db.Text, nullable=True, default='[]')
+    etiquetas = db.Column(db.ARRAY(db.String), nullable=True, default=[])
     notas = db.Column(db.Text, nullable=True)
     ultima_interaccion = db.Column(db.DateTime, default=datetime.utcnow)
     fecha_creacion = db.Column(db.DateTime, default=datetime.utcnow)
@@ -54,34 +54,16 @@ class Contacto(db.Model):
         self.ultima_interaccion = datetime.utcnow()
         self.fecha_actualizacion = datetime.utcnow()
     
-    @property
-    def etiquetas_list(self):
-        """Retorna las etiquetas como lista de Python"""
-        try:
-            return json.loads(self.etiquetas) if self.etiquetas else []
-        except (json.JSONDecodeError, TypeError):
-            return []
-    
-    @etiquetas_list.setter
-    def etiquetas_list(self, value):
-        """Establece las etiquetas desde una lista de Python"""
-        if isinstance(value, list):
-            self.etiquetas = json.dumps(value)
-        else:
-            self.etiquetas = json.dumps([])
-    
     def get_etiquetas_str(self):
         """Retorna las etiquetas como string separado por comas"""
-        etiquetas_list = self.etiquetas_list
-        return ', '.join(etiquetas_list) if etiquetas_list else ''
+        return ', '.join(self.etiquetas) if self.etiquetas else ''
     
     def set_etiquetas_from_str(self, etiquetas_str):
         """Establece las etiquetas desde un string separado por comas"""
         if etiquetas_str:
-            etiquetas_list = [tag.strip() for tag in etiquetas_str.split(',') if tag.strip()]
-            self.etiquetas_list = etiquetas_list
+            self.etiquetas = [tag.strip() for tag in etiquetas_str.split(',') if tag.strip()]
         else:
-            self.etiquetas_list = []
+            self.etiquetas = []
     
     def __repr__(self):
         return f'<Contacto {self.nombre}>'

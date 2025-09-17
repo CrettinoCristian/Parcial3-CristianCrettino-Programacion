@@ -270,10 +270,10 @@
                         </p>
                     {% endif %}
                     
-                    {% if interaccion.contacto.etiquetas_list %}
+                    {% if interaccion.contacto.etiquetas %}
                         <div class="mt-3">
                             <small class="text-muted d-block mb-1">Etiquetas:</small>
-                            {% for etiqueta in interaccion.contacto.etiquetas_list %}
+                            {% for etiqueta in interaccion.contacto.etiquetas %}
                                 <span class="badge bg-secondary me-1 mb-1">{{ etiqueta }}</span>
                             {% endfor %}
                         </div>
