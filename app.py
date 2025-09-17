@@ -10,6 +10,10 @@ def create_app(config_name='development'):
     app = Flask(__name__)
     app.config.from_object(config[config_name])
     
+    # Para producción en Vercel, configurar instance_path en directorio temporal
+    if config_name == 'production':
+        app.instance_path = '/tmp'
+    
     # Inicializar extensiones
     db.init_app(app)
     migrate = Migrate(app, db)

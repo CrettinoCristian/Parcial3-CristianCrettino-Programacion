@@ -30,9 +30,10 @@ class DevelopmentConfig(Config):
 class ProductionConfig(Config):
     """Configuración para producción"""
     DEBUG = False
-    # SQLite para producción en Vercel (más simple y sin configuración adicional)
+    # SQLite para producción en Vercel - usar directorio temporal
+    # Vercel solo permite escritura en /tmp
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
-        'sqlite:///mini_crm.db'
+        'sqlite:////tmp/mini_crm.db'
 
 # Configuración por defecto
 config = {
