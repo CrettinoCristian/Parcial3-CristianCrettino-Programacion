@@ -7,10 +7,7 @@ class Config:
     # Configuración de Flask
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'f5a3b2c8e4d90123a9b7c4d5f6e7a8b9'
     
-    # Configuración de la base de datos PostgreSQL
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
-        'postgresql://postgres:612345621c@localhost:5432/mini_crm'
-    
+    # Configuración de la base de datos
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
     # Configuración de sesiones
@@ -26,10 +23,16 @@ class Config:
 class DevelopmentConfig(Config):
     """Configuración para desarrollo"""
     DEBUG = True
+    # PostgreSQL para desarrollo local
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
+        'postgresql://postgres:612345621c@localhost:5432/mini_crm'
     
 class ProductionConfig(Config):
     """Configuración para producción"""
     DEBUG = False
+    # SQLite para producción en Vercel (más simple y sin configuración adicional)
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
+        'sqlite:///mini_crm.db'
 
 # Configuración por defecto
 config = {
