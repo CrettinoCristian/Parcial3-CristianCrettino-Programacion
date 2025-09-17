@@ -365,6 +365,26 @@ footer {
     }
 }
 
+/* Corrección para campos de texto en modo oscuro */
+.form-control, .form-control:focus {
+    background-color: #ffffff !important;
+    color: #212529 !important;
+    border: 1px solid #ced4da !important;
+}
+
+/* Corrección para textarea específicamente */
+textarea.form-control, textarea.form-control:focus {
+    background-color: #ffffff !important;
+    color: #212529 !important;
+    border: 1px solid #ced4da !important;
+}
+
+/* Corrección para campos de descripción en detalles */
+.bg-light {
+    background-color: #f8f9fa !important;
+    color: #212529 !important;
+}
+
 /* Utilidades personalizadas */
 .text-gradient {
     background: linear-gradient(135deg, var(--primary-color) 0%, var(--info-color) 100%);

@@ -51,8 +51,8 @@ class Contacto(db.Model):
     
     def actualizar_ultima_interaccion(self):
         """Actualiza la fecha de última interacción"""
-        self.ultima_interaccion = datetime.utcnow()
-        self.fecha_actualizacion = datetime.utcnow()
+        self.ultima_interaccion = datetime.now()  # Usar hora local
+        self.fecha_actualizacion = datetime.now()  # Usar hora local
     
     def get_etiquetas_str(self):
         """Retorna las etiquetas como string separado por comas"""
@@ -74,9 +74,9 @@ class Interaccion(db.Model):
     
     id = db.Column(db.Integer, primary_key=True)
     contacto_id = db.Column(db.Integer, db.ForeignKey('contactos.id'), nullable=False, index=True)
-    fecha = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    fecha = db.Column(db.DateTime, default=datetime.now, nullable=False)  # Usar hora local
     nota = db.Column(db.Text, nullable=False)
-    fecha_creacion = db.Column(db.DateTime, default=datetime.utcnow)
+    fecha_creacion = db.Column(db.DateTime, default=datetime.now)  # Usar hora local
     
     def __repr__(self):
         return f'<Interaccion {self.id} - {self.fecha}>'

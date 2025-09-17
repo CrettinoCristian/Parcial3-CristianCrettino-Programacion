@@ -41,7 +41,7 @@ def nueva(contacto_id):
             if fecha_str:
                 fecha = datetime.strptime(fecha_str, '%Y-%m-%dT%H:%M')
             else:
-                fecha = datetime.utcnow()
+                fecha = datetime.now()  # Usar hora local en lugar de UTC
         except ValueError:
             flash('Formato de fecha inválido.', 'error')
             return render_template('interacciones/form.html', contacto=contacto)

@@ -152,7 +152,7 @@ def editar(id):
             contacto.empresa = empresa
             contacto.notas = notas
             contacto.set_etiquetas_from_str(etiquetas_str)
-            contacto.fecha_actualizacion = datetime.utcnow()
+            contacto.fecha_actualizacion = datetime.now()  # Usar hora local
             
             db.session.commit()
             

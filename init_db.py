@@ -118,7 +118,7 @@ def create_sample_data(app):
                     telefono=contacto_data["telefono"],
                     empresa=contacto_data["empresa"],
                     notas=contacto_data["notas"],
-                    fecha_creacion=datetime.utcnow() - timedelta(days=len(contactos_creados) * 2)
+                    fecha_creacion=datetime.now() - timedelta(days=len(contactos_creados) * 2)  # Usar hora local
                 )
                 contacto.etiquetas = contacto_data["etiquetas"]
                 db.session.add(contacto)
@@ -169,7 +169,7 @@ def create_sample_data(app):
                 interaccion = Interaccion(
                     contacto_id=interaccion_data["contacto"].id,
                     nota=interaccion_data["nota"],
-                    fecha=datetime.utcnow() - timedelta(days=interaccion_data["dias_atras"])
+                    fecha=datetime.now() - timedelta(days=interaccion_data["dias_atras"])  # Usar hora local
                 )
                 db.session.add(interaccion)
                 
