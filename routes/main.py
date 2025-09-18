@@ -30,15 +30,15 @@ def dashboard():
                                          .order_by(desc(Contacto.fecha_creacion))\
                                          .limit(5).all()
         
-        # Generar gráficos usando las funciones del módulo statistics
+        # Generar datos usando las funciones del módulo statistics
         resultado_etiquetas = generar_grafico_etiquetas(current_user.id)
         if resultado_etiquetas and len(resultado_etiquetas) == 2:
             grafico_etiquetas_img, grafico_etiquetas_data = resultado_etiquetas
         else:
             grafico_etiquetas_img, grafico_etiquetas_data = None, None
             
-        grafico_interacciones_img = generar_grafico_interacciones_tiempo(current_user.id)
-        grafico_empresas_img = generar_grafico_contactos_empresa(current_user.id)
+        grafico_interacciones_data = generar_grafico_interacciones_tiempo(current_user.id)
+        grafico_empresas_data = generar_grafico_contactos_empresa(current_user.id)
         
         # Si no hay datos de etiquetas del módulo, usar función de fallback
         if not grafico_etiquetas_data:
@@ -49,8 +49,8 @@ def dashboard():
                              ultimos_contactos=ultimos_contactos,
                              grafico_etiquetas_img=grafico_etiquetas_img,
                              grafico_etiquetas_data=grafico_etiquetas_data,
-                             grafico_interacciones_img=grafico_interacciones_img,
-                             grafico_empresas_img=grafico_empresas_img,
+                             grafico_interacciones_img=grafico_interacciones_data,
+                             grafico_empresas_img=grafico_empresas_data,
                              # Mantener compatibilidad con template actual
                              total_contactos=estadisticas['total_contactos'],
                              total_interacciones=estadisticas['total_interacciones'],
@@ -77,7 +77,7 @@ def dashboard():
                              ultimos_contactos=ultimos_contactos,
                              total_interacciones=total_interacciones,
                              grafico_etiquetas=grafico_etiquetas_fallback,
-                             estadisticas=None,
+                             estadisticas={'total_contactos': total_contactos, 'total_interacciones': total_interacciones},
                              grafico_etiquetas_img=None,
                              grafico_etiquetas_data=grafico_etiquetas_fallback,
                              grafico_interacciones_img=None,

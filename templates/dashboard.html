@@ -167,37 +167,26 @@
                 </h5>
             </div>
             <div class="card-body">
-                {% if grafico_etiquetas_img %}
-                    <!-- Gráfico visual de Matplotlib -->
-                    <div class="text-center mb-3">
-                        <img src="data:image/png;base64,{{ grafico_etiquetas_img }}" 
-                             class="img-fluid" 
-                             alt="Gráfico de distribución de etiquetas"
-                             style="max-height: 300px;">
-                    </div>
-                {% endif %}
-                
-                {% if grafico_etiquetas_data or grafico_etiquetas %}
-                    <!-- Tabla de datos -->
+                {% if grafico_etiquetas_data %}
+                    <!-- Mostrar datos en tabla en lugar de gráfico -->
                     <div class="table-responsive">
-                        <table class="table table-sm table-dark">
+                        <table class="table table-dark table-striped">
                             <thead>
                                 <tr>
                                     <th>Etiqueta</th>
-                                    <th class="text-end">Cantidad</th>
-                                    <th class="text-end">Porcentaje</th>
+                                    <th>Cantidad</th>
+                                    <th>Porcentaje</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {% set datos_etiquetas = grafico_etiquetas_data or grafico_etiquetas %}
-                                {% set total = datos_etiquetas.values() | sum %}
-                                {% for etiqueta, cantidad in datos_etiquetas.items() %}
+                                {% set total_etiquetas = grafico_etiquetas_data.values() | sum %}
+                                {% for etiqueta, cantidad in grafico_etiquetas_data.items() %}
                                 <tr>
                                     <td>
                                         <span class="badge bg-primary">{{ etiqueta }}</span>
                                     </td>
-                                    <td class="text-end">{{ cantidad }}</td>
-                                    <td class="text-end">{{ "%.1f" | format((cantidad / total * 100)) }}%</td>
+                                    <td>{{ cantidad }}</td>
+                                    <td>{{ "%.1f"|format((cantidad / total_etiquetas * 100)) }}%</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
@@ -219,24 +208,34 @@
     </div>
 </div>
 
-<!-- Nueva sección de gráficos adicionales -->
+<!-- Nueva sección de estadísticas adicionales -->
 {% if grafico_interacciones_img or grafico_empresas_img %}
 <div class="row mt-4">
     {% if grafico_interacciones_img %}
     <div class="col-lg-6">
-        <div class="card bg-dark text-light stats-section-clickable" 
-             data-modal-title="Interacciones en el Tiempo" 
-             data-modal-content="interacciones">
+        <div class="card bg-dark text-light">
             <div class="card-header bg-dark text-light">
                 <h5 class="card-title mb-0">
-                    <i class="bi bi-graph-up"></i> Interacciones en el Tiempo
+                    <i class="bi bi-graph-up"></i> Estadísticas de Interacciones
                 </h5>
             </div>
-            <div class="card-body text-center">
-                <img src="data:image/png;base64,{{ grafico_interacciones_img }}" 
-                     class="img-fluid" 
-                     alt="Gráfico de interacciones en el tiempo"
-                     style="max-height: 300px;">
+            <div class="card-body">
+                {% if grafico_interacciones_img %}
+                <div class="row text-center">
+                    <div class="col-md-4">
+                        <h4 class="text-primary">{{ grafico_interacciones_img.total_interacciones }}</h4>
+                        <small class="text-muted">Total (30 días)</small>
+                    </div>
+                    <div class="col-md-4">
+                        <h4 class="text-success">{{ grafico_interacciones_img.dias_activos }}</h4>
+                        <small class="text-muted">Días activos</small>
+                    </div>
+                    <div class="col-md-4">
+                        <h4 class="text-info">{{ grafico_interacciones_img.promedio_diario }}</h4>
+                        <small class="text-muted">Promedio diario</small>
+                    </div>
+                </div>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -244,19 +243,33 @@
     
     {% if grafico_empresas_img %}
     <div class="col-lg-6">
-        <div class="card bg-dark text-light stats-section-clickable" 
-             data-modal-title="Contactos por Empresa" 
-             data-modal-content="empresas">
+        <div class="card bg-dark text-light">
             <div class="card-header bg-dark text-light">
                 <h5 class="card-title mb-0">
                     <i class="bi bi-building"></i> Contactos por Empresa
                 </h5>
             </div>
-            <div class="card-body text-center">
-                <img src="data:image/png;base64,{{ grafico_empresas_img }}" 
-                     class="img-fluid" 
-                     alt="Gráfico de contactos por empresa"
-                     style="max-height: 300px;">
+            <div class="card-body">
+                {% if grafico_empresas_img %}
+                <div class="table-responsive">
+                    <table class="table table-dark table-sm">
+                        <thead>
+                            <tr>
+                                <th>Empresa</th>
+                                <th class="text-end">Contactos</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for empresa, cantidad in grafico_empresas_img.items() %}
+                            <tr>
+                                <td>{{ empresa }}</td>
+                                <td class="text-end">{{ cantidad }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% endif %}
             </div>
         </div>
     </div>
