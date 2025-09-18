@@ -1,6 +1,6 @@
 # Mini CRM Personal
 
-Un sistema web simple y eficiente para gestionar contactos y sus interacciones, diseñado como CRM básico para uso local.
+Un sistema web simple y eficiente para gestionar contactos y sus interacciones, diseñado como CRM básico con despliegue en la nube.
 
 ## 🎯 Características Principales
 
@@ -10,6 +10,7 @@ Un sistema web simple y eficiente para gestionar contactos y sus interacciones, 
 - **Búsqueda y Filtros**: Buscar por nombre, empresa o etiquetas
 - **Dashboard con Métricas**: Estadísticas y gráficos de distribución
 - **Interfaz Moderna**: UI limpia y responsiva con Bootstrap
+- **Despliegue en la Nube**: Aplicación desplegada en Vercel con base de datos Neon
 
 ## 🛠️ Tecnologías Utilizadas
 
@@ -19,7 +20,11 @@ Un sistema web simple y eficiente para gestionar contactos y sus interacciones, 
 - **Flask-Migrate**: Migraciones de base de datos
 - **Flask-Login**: Sistema de autenticación
 - **bcrypt**: Hash seguro de contraseñas
-- **PostgreSQL**: Base de datos principal
+- **Neon PostgreSQL**: Base de datos en la nube
+
+### Despliegue
+- **Vercel**: Plataforma de despliegue
+- **Neon**: Base de datos PostgreSQL serverless
 
 ### Frontend
 - **HTML5 + Jinja2**: Templates dinámicos
@@ -74,13 +79,13 @@ mini_crm/
 
 ## 🚀 Instalación y Configuración
 
-### Prerrequisitos
+### Opción 1: Desarrollo Local
 
+#### Prerrequisitos
 1. **Python 3.8+** instalado
-2. **PostgreSQL** instalado y ejecutándose
-3. **Git** (opcional, para clonar el repositorio)
+2. **Git** (opcional, para clonar el repositorio)
 
-### Paso 1: Clonar o Descargar el Proyecto
+#### Paso 1: Clonar o Descargar el Proyecto
 
 ```bash
 # Si tienes git instalado
@@ -90,7 +95,7 @@ cd mini_crm
 # O simplemente descomprime el archivo ZIP en una carpeta
 ```
 
-### Paso 2: Crear Entorno Virtual
+#### Paso 2: Crear Entorno Virtual
 
 ```bash
 # Crear entorno virtual
@@ -103,52 +108,58 @@ venv\Scripts\activate
 source venv/bin/activate
 ```
 
-### Paso 3: Instalar Dependencias
+#### Paso 3: Instalar Dependencias
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### Paso 4: Configurar Base de Datos
+#### Paso 4: Configurar Variables de Entorno
 
-1. **Crear la base de datos en PostgreSQL:**
+Crea un archivo `.env` en la raíz del proyecto:
 
-```sql
--- Conectarse a PostgreSQL como superusuario
-psql -U postgres
+```env
+# Base de datos Neon PostgreSQL
+DATABASE_URL=postgresql://neondb_owner:tu_password@ep-flat-resonance-ad2muymd-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require
 
--- Crear la base de datos
-CREATE DATABASE mini_crm;
+# Clave secreta para sesiones
+SECRET_KEY=tu-clave-secreta-muy-segura
 
--- Crear usuario (opcional)
-CREATE USER crm_user WITH PASSWORD 'tu_password';
-GRANT ALL PRIVILEGES ON DATABASE mini_crm TO crm_user;
+# Modo de desarrollo
+FLASK_ENV=development
 ```
 
-2. **Configurar credenciales en `config.py`:**
-
-```python
-# Editar la línea de SQLALCHEMY_DATABASE_URI en config.py
-SQLALCHEMY_DATABASE_URI = 'postgresql://usuario:password@localhost:5432/mini_crm'
-```
-
-### Paso 5: Inicializar Base de Datos
+#### Paso 5: Inicializar Base de Datos
 
 ```bash
-# Verificar conexión a la base de datos
-python init_db.py --check-only
-
-# Inicializar tablas y migraciones
-python init_db.py
-
-# Opcional: Crear datos de ejemplo para pruebas
-python init_db.py --sample-data
+# Inicializar tablas en Neon
+python init_vercel_db.py
 ```
 
-### Paso 6: Ejecutar la Aplicación
+#### Paso 6: Ejecutar la Aplicación
 
 ```bash
 python app.py
+```
+
+La aplicación estará disponible en: **http://localhost:5000**
+
+### Opción 2: Despliegue en Vercel
+
+La aplicación está configurada para desplegarse automáticamente en Vercel:
+
+1. **Fork o clona** este repositorio
+2. **Conecta tu repositorio** a Vercel
+3. **Configura las variables de entorno** en Vercel:
+   - `DATABASE_URL`: URL de conexión a Neon PostgreSQL
+   - `SECRET_KEY`: Clave secreta para sesiones
+4. **Despliega** automáticamente
+
+#### Variables de Entorno en Vercel
+
+```
+DATABASE_URL=postgresql://neondb_owner:password@host.neon.tech/neondb?sslmode=require
+SECRET_KEY=tu-clave-secreta-muy-segura
 ```
 
 La aplicación estará disponible en: **http://localhost:5000**
@@ -184,30 +195,25 @@ La aplicación estará disponible en: **http://localhost:5000**
 
 ### Variables de Entorno
 
-Puedes configurar la aplicación usando variables de entorno:
+La aplicación utiliza las siguientes variables de entorno:
 
 ```bash
-# Configuración de base de datos
-export DATABASE_URL="postgresql://usuario:password@localhost:5432/mini_crm"
+# Base de datos Neon PostgreSQL
+DATABASE_URL="postgresql://neondb_owner:password@host.neon.tech/neondb?sslmode=require"
 
 # Clave secreta para sesiones
-export SECRET_KEY="tu-clave-secreta-muy-segura"
+SECRET_KEY="tu-clave-secreta-muy-segura"
 
 # Modo de desarrollo/producción
-export FLASK_ENV="development"
+FLASK_ENV="development"
 ```
 
 ### Configuración de Producción
 
-Para uso en producción, modifica `config.py`:
-
-```python
-class ProductionConfig(Config):
-    DEBUG = False
-    # Usar variables de entorno para credenciales
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
-    SECRET_KEY = os.environ.get('SECRET_KEY')
-```
+Para despliegue en producción (Vercel), la aplicación automáticamente:
+- Detecta las variables de entorno configuradas en Vercel
+- Usa Neon PostgreSQL como base de datos
+- Configura el modo de producción automáticamente
 
 ## 🗃️ Estructura de Base de Datos
 
@@ -249,15 +255,21 @@ class ProductionConfig(Config):
 
 ## 🐛 Solución de Problemas
 
-### Error de Conexión a Base de Datos
+### Error de Conexión a Base de Datos Neon
 ```bash
-# Verificar que PostgreSQL esté ejecutándose
-sudo service postgresql status  # Linux
-brew services list | grep postgresql  # macOS
-# En Windows: Verificar en Servicios
+# Verificar que la URL de Neon sea correcta
+# Asegurarse de que incluya ?sslmode=require
+DATABASE_URL=postgresql://neondb_owner:password@host.neon.tech/neondb?sslmode=require
 
-# Verificar que la base de datos exista
-psql -U postgres -l
+# Verificar que las credenciales sean válidas en Neon Console
+```
+
+### Error de Variables de Entorno
+```bash
+# Verificar que el archivo .env existe y tiene las variables correctas
+cat .env
+
+# En Vercel, verificar que las variables estén configuradas en el dashboard
 ```
 
 ### Error de Dependencias
@@ -269,14 +281,13 @@ pip install --upgrade pip
 pip install -r requirements.txt --force-reinstall
 ```
 
-### Error de Migraciones
+### Error de Inicialización de Base de Datos
 ```bash
-# Eliminar carpeta migrations y reinicializar
-rm -rf migrations/
-python init_db.py
+# Ejecutar el script de inicialización para Neon
+python init_vercel_db.py
 ```
 
-### Puerto en Uso
+### Puerto en Uso (Desarrollo Local)
 ```bash
 # Cambiar puerto en app.py
 app.run(debug=True, host='0.0.0.0', port=5001)  # Usar puerto 5001
@@ -312,9 +323,17 @@ Si encuentras algún problema o tienes sugerencias:
 
 1. Revisa la sección de "Solución de Problemas"
 2. Verifica que todas las dependencias estén instaladas
-3. Asegúrate de que PostgreSQL esté ejecutándose
-4. Revisa los logs de la aplicación para errores específicos
+3. Asegúrate de que las variables de entorno estén configuradas correctamente
+4. Para problemas con Neon PostgreSQL, verifica la conexión en Neon Console
+5. Para problemas con Vercel, revisa los logs de despliegue en el dashboard
+6. Revisa los logs de la aplicación para errores específicos
+
+### Enlaces Útiles
+
+- **Aplicación en Vercel**: [URL de tu aplicación desplegada]
+- **Neon Console**: https://console.neon.tech
+- **Vercel Dashboard**: https://vercel.com/dashboard
 
 ---
 
-**Mini CRM Personal** - Sistema de gestión de contactos simple y eficiente para uso local.
+**Mini CRM Personal** - Sistema de gestión de contactos con despliegue en la nube usando Vercel y Neon PostgreSQL.
