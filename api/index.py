@@ -78,5 +78,39 @@ with app.app_context():
         except Exception as e2:
             print(f"[DEBUG] Failed to create tables: {e2}")
 
+# Agregar endpoint de prueba para verificar que la aplicación funciona
+@app.route('/test')
+def test_endpoint():
+    """Endpoint simple para verificar que la aplicación funciona"""
+    try:
+        return {
+            "status": "success",
+            "message": "La aplicación está funcionando correctamente",
+            "database_url": "configured" if os.environ.get('POSTGRES_URL') else "not configured"
+        }
+    except Exception as e:
+        return {"status": "error", "message": str(e)}, 500
+
+# Agregar endpoint para verificar la base de datos
+@app.route('/test-db')
+def test_db_endpoint():
+    """Endpoint para probar la conexión a la base de datos"""
+    try:
+        # Verificar conexión a la base de datos
+        inspector = db.inspect(db.engine)
+        tables = inspector.get_table_names()
+        
+        # Contar usuarios
+        user_count = 0
+        if 'users' in tables:
+            user_count = User.query.count()
+        
+        return {
+            "status": "success",
+            "message": "Base de datos conectada",
+            "tables": tables,
+            "user_count": user_count
+        }
+    except Exception as e:
+        return {"status": "error", "message": str(e)}, 500
 # Vercel necesita que la aplicación se exporte directamente
-# No usar if __name__ == "__main__" en funciones serverless

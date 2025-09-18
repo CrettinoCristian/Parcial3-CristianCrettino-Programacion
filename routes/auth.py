@@ -8,51 +8,50 @@ auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
-    """Página de inicio de sesión"""
-    if current_user.is_authenticated:
-        return redirect(url_for('main.dashboard'))
-    
+    """Ruta de inicio de sesión"""
     if request.method == 'POST':
-        email = request.form.get('email')
-        password = request.form.get('password')
-        remember = bool(request.form.get('remember'))
-        
-        # Debug logging para producción
-        if os.environ.get('FLASK_ENV') == 'production':
-            print(f"[DEBUG] Login attempt for email: {email}")
-            print(f"[DEBUG] Password provided: {'Yes' if password else 'No'}")
-        
-        if not email or not password:
-            flash('Por favor completa todos los campos.', 'error')
-            return render_template('auth/login.html')
-        
         try:
+            print("[DEBUG VERCEL] Iniciando proceso de login")
+            email = request.form.get('email')
+            password = request.form.get('password')
+            
+            print(f"[DEBUG VERCEL] Email recibido: {email}")
+            print(f"[DEBUG VERCEL] Password length: {len(password) if password else 0}")
+            
+            if not email or not password:
+                print("[DEBUG VERCEL] Email o password faltante")
+                flash('Por favor, completa todos los campos.', 'error')
+                return render_template('auth/login.html')
+            
+            print("[DEBUG VERCEL] Buscando usuario en base de datos")
             user = User.query.filter_by(email=email).first()
             
-            if os.environ.get('FLASK_ENV') == 'production':
-                print(f"[DEBUG] User found: {'Yes' if user else 'No'}")
-                if user:
-                    print(f"[DEBUG] User ID: {user.id}, Name: {user.nombre}")
+            if not user:
+                print(f"[DEBUG VERCEL] Usuario no encontrado: {email}")
+                flash('Credenciales inválidas.', 'error')
+                return render_template('auth/login.html')
             
-            if user and user.check_password(password):
-                if os.environ.get('FLASK_ENV') == 'production':
-                    print(f"[DEBUG] Password check: Success")
-                
-                login_user(user, remember=remember)
+            print(f"[DEBUG VERCEL] Usuario encontrado: {user.nombre}")
+            print(f"[DEBUG VERCEL] Verificando contraseña...")
+            
+            if user.check_password(password):
+                print("[DEBUG VERCEL] Contraseña correcta, iniciando sesión")
+                login_user(user, remember=request.form.get('remember'))
                 next_page = request.args.get('next')
-                if not next_page or urlparse(next_page).netloc != '':
-                    next_page = url_for('main.dashboard')
-                flash(f'¡Bienvenido {user.nombre}!', 'success')
-                return redirect(next_page)
+                print(f"[DEBUG VERCEL] Redirigiendo a: {next_page or '/dashboard'}")
+                return redirect(next_page) if next_page else redirect(url_for('main.dashboard'))
             else:
-                if os.environ.get('FLASK_ENV') == 'production':
-                    print(f"[DEBUG] Password check: Failed")
-                flash('Email o contraseña incorrectos.', 'error')
+                print("[DEBUG VERCEL] Contraseña incorrecta")
+                flash('Credenciales inválidas.', 'error')
+                return render_template('auth/login.html')
                 
         except Exception as e:
-            if os.environ.get('FLASK_ENV') == 'production':
-                print(f"[DEBUG] Database error during login: {str(e)}")
+            print(f"[DEBUG VERCEL] Error en login: {str(e)}")
+            print(f"[DEBUG VERCEL] Error type: {type(e).__name__}")
+            import traceback
+            print(f"[DEBUG VERCEL] Traceback: {traceback.format_exc()}")
             flash('Error de conexión. Inténtalo de nuevo.', 'error')
+            return render_template('auth/login.html')
     
     return render_template('auth/login.html')
 

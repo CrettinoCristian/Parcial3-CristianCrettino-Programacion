@@ -5,6 +5,10 @@ Este script se puede ejecutar manualmente para crear las tablas
 """
 import os
 import sys
+from dotenv import load_dotenv
+
+# Cargar variables de entorno
+load_dotenv()
 
 # Agregar el directorio actual al path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))

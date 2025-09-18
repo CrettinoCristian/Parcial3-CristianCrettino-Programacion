@@ -2,23 +2,53 @@ import os
 from datetime import timedelta
 
 class Config:
-    """Configuración base para la aplicación Flask"""
+    """Configuración base de la aplicación"""
+    SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-secret-key-change-in-production'
     
-    # Configuración de Flask
-    SECRET_KEY = os.environ.get('SECRET_KEY') or 'f5a3b2c8e4d90123a9b7c4d5f6e7a8b9'
+    # Configuración de base de datos
+    # Prioridad: POSTGRES_URL (Vercel) > DATABASE_URL (Neon/Railway/Supabase) > SQLite local
+    POSTGRES_URL = os.environ.get('POSTGRES_URL')
+    DATABASE_URL = os.environ.get('DATABASE_URL')
     
-    # Configuración de la base de datos
+    if POSTGRES_URL:
+        # Vercel PostgreSQL
+        SQLALCHEMY_DATABASE_URI = POSTGRES_URL
+        print(f"[CONFIG] Using Vercel PostgreSQL: {POSTGRES_URL[:50]}...")
+    elif DATABASE_URL:
+        # Neon, Railway, Supabase, u otra PostgreSQL
+        SQLALCHEMY_DATABASE_URI = DATABASE_URL
+        # Detectar proveedor por la URL
+        if 'neon.tech' in DATABASE_URL:
+            print(f"[CONFIG] Using Neon PostgreSQL: {DATABASE_URL[:50]}...")
+        elif 'railway.app' in DATABASE_URL:
+            print(f"[CONFIG] Using Railway PostgreSQL: {DATABASE_URL[:50]}...")
+        elif 'supabase.co' in DATABASE_URL:
+            print(f"[CONFIG] Using Supabase PostgreSQL: {DATABASE_URL[:50]}...")
+        else:
+            print(f"[CONFIG] Using PostgreSQL: {DATABASE_URL[:50]}...")
+    else:
+        # SQLite local para desarrollo
+        basedir = os.path.abspath(os.path.dirname(__file__))
+        SQLALCHEMY_DATABASE_URI = f'sqlite:///{os.path.join(basedir, "app.db")}'
+        print("[CONFIG] Using local SQLite database")
+    
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
-    # Configuración de sesiones
-    PERMANENT_SESSION_LIFETIME = timedelta(hours=24)
+    # Configuración específica para PostgreSQL
+    if 'postgresql://' in SQLALCHEMY_DATABASE_URI:
+        SQLALCHEMY_ENGINE_OPTIONS = {
+            'pool_pre_ping': True,
+            'pool_recycle': 300,
+            'connect_args': {
+                'sslmode': 'require' if 'sslmode=require' not in SQLALCHEMY_DATABASE_URI else None
+            }
+        }
     
     # Configuración de Flask-Login
     REMEMBER_COOKIE_DURATION = timedelta(days=7)
     
-    # Configuración de archivos estáticos
-    UPLOAD_FOLDER = 'static/images'
-    MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB máximo
+    # Configuración de sesiones
+    PERMANENT_SESSION_LIFETIME = timedelta(hours=24)
 
 class DevelopmentConfig(Config):
     """Configuración para desarrollo"""
