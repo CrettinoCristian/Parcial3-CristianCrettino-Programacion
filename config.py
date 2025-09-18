@@ -32,13 +32,23 @@ class ProductionConfig(Config):
     DEBUG = False
     
     # Buscar variables de PostgreSQL en orden de prioridad
-    SQLALCHEMY_DATABASE_URI = (
+    # Vercel Postgres requiere parámetros SSL específicos
+    database_url = (
         os.environ.get('POSTGRES_URL') or 
         os.environ.get('DATABASE_URL') or 
         os.environ.get('POSTGRES_DATABASE') or
         os.environ.get('POSTGRES_PRISMA_URL') or
         'postgresql://postgres:612345621c@localhost:5432/mini_crm'
     )
+    
+    # Agregar parámetros SSL para Vercel Postgres si es necesario
+    if database_url and 'vercel-storage.com' in database_url:
+        if '?' not in database_url:
+            database_url += '?sslmode=require'
+        elif 'sslmode' not in database_url:
+            database_url += '&sslmode=require'
+    
+    SQLALCHEMY_DATABASE_URI = database_url
 
 # Configuración por defecto
 config = {

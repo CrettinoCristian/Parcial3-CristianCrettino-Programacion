@@ -82,21 +82,44 @@ def register():
             return render_template('auth/register.html')
         
         # Verificar si el email ya existe
-        if User.query.filter_by(email=email).first():
-            flash('Este email ya está registrado.', 'error')
+        try:
+            if os.environ.get('FLASK_ENV') == 'production':
+                print(f"[DEBUG] Checking if email exists: {email}")
+            
+            existing_user = User.query.filter_by(email=email).first()
+            
+            if os.environ.get('FLASK_ENV') == 'production':
+                print(f"[DEBUG] Email exists: {'Yes' if existing_user else 'No'}")
+            
+            if existing_user:
+                flash('Este email ya está registrado.', 'error')
+                return render_template('auth/register.html')
+        except Exception as e:
+            if os.environ.get('FLASK_ENV') == 'production':
+                print(f"[DEBUG] Error checking existing user: {str(e)}")
+            flash('Error de conexión. Inténtalo de nuevo.', 'error')
             return render_template('auth/register.html')
         
         # Crear nuevo usuario
         try:
+            # Debug logging para producción
+            if os.environ.get('FLASK_ENV') == 'production':
+                print(f"[DEBUG] Attempting to create user: {email}")
+            
             user = User(nombre=nombre, email=email)
             user.set_password(password)
             db.session.add(user)
             db.session.commit()
             
+            if os.environ.get('FLASK_ENV') == 'production':
+                print(f"[DEBUG] User created successfully: {user.id}")
+            
             flash('¡Registro exitoso! Ahora puedes iniciar sesión.', 'success')
             return redirect(url_for('auth.login'))
         except Exception as e:
             db.session.rollback()
+            if os.environ.get('FLASK_ENV') == 'production':
+                print(f"[DEBUG] Error creating user: {str(e)}")
             flash('Error al crear la cuenta. Inténtalo de nuevo.', 'error')
     
     return render_template('auth/register.html')

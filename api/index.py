@@ -27,10 +27,19 @@ db_url = (
     os.environ.get('POSTGRES_PRISMA_URL') or
     'fallback'
 )
+
 if db_url != 'fallback':
     # Ocultar credenciales para logging seguro
     safe_url = db_url.split('@')[1] if '@' in db_url else db_url
     print(f"[DEBUG] Using database: {safe_url}")
+    
+    # Verificar si es Vercel Postgres
+    if 'vercel-storage.com' in db_url:
+        print("[DEBUG] Detected Vercel Postgres - SSL required")
+        if 'sslmode' not in db_url:
+            print("[DEBUG] Adding SSL mode to database URL")
+    else:
+        print("[DEBUG] Not Vercel Postgres - standard connection")
 else:
     print("[DEBUG] Using fallback database URL")
 
