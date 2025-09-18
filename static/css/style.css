@@ -9,6 +9,9 @@
     --warning-color: #ffc107;
     --danger-color: #dc3545;
     --dark-color: #212529;
+    --light-bg: #f8f9fa;
+    --soft-white: #fefefe;
+    --warm-white: #fdfdfd;
     --border-radius: 0.375rem;
     --box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
     --transition: all 0.15s ease-in-out;
@@ -48,7 +51,7 @@ body {
 /* Cambiar el cuadro de registro para que no sea blanco */
 .card.bg-light {
     background-color: #2c3e50 !important;
-    color: #ffffff !important;
+    color: var(--soft-white) !important;
     border: 1px solid #34495e;
 }
 
@@ -183,7 +186,7 @@ body {
 .pagination .page-link:hover {
     background-color: var(--primary-color);
     border-color: var(--primary-color);
-    color: white;
+    color: var(--soft-white);
     transform: translateY(-1px);
 }
 
@@ -215,7 +218,7 @@ body {
 
 .etiqueta-sugerencia:hover {
     background-color: var(--primary-color) !important;
-    color: white !important;
+    color: var(--soft-white) !important;
     transform: scale(1.05);
 }
 
@@ -367,21 +370,21 @@ footer {
 
 /* Corrección para campos de texto en modo oscuro */
 .form-control, .form-control:focus {
-    background-color: #ffffff !important;
+    background-color: var(--warm-white) !important;
     color: #212529 !important;
     border: 1px solid #ced4da !important;
 }
 
 /* Corrección para textarea específicamente */
 textarea.form-control, textarea.form-control:focus {
-    background-color: #ffffff !important;
+    background-color: var(--warm-white) !important;
     color: #212529 !important;
     border: 1px solid #ced4da !important;
 }
 
 /* Corrección para campos de descripción en detalles */
 .bg-light {
-    background-color: #f8f9fa !important;
+    background-color: var(--light-bg) !important;
     color: #212529 !important;
 }
 
@@ -436,7 +439,7 @@ textarea.form-control, textarea.form-control:focus {
     left: 50%;
     transform: translateX(-50%);
     background-color: var(--dark-color);
-    color: white;
+    color: var(--soft-white);
     padding: 0.5rem;
     border-radius: var(--border-radius);
     font-size: 0.875rem;
