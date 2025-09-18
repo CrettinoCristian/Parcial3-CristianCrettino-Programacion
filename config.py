@@ -30,10 +30,15 @@ class DevelopmentConfig(Config):
 class ProductionConfig(Config):
     """Configuración para producción"""
     DEBUG = False
-    # Vercel Postgres para producción - base de datos persistente
-    SQLALCHEMY_DATABASE_URI = os.environ.get('POSTGRES_URL') or \
-        os.environ.get('DATABASE_URL') or \
+    
+    # Buscar variables de PostgreSQL en orden de prioridad
+    SQLALCHEMY_DATABASE_URI = (
+        os.environ.get('POSTGRES_URL') or 
+        os.environ.get('DATABASE_URL') or 
+        os.environ.get('POSTGRES_DATABASE') or
+        os.environ.get('POSTGRES_PRISMA_URL') or
         'postgresql://postgres:612345621c@localhost:5432/mini_crm'
+    )
 
 # Configuración por defecto
 config = {

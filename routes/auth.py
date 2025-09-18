@@ -2,6 +2,7 @@ from flask import Blueprint, render_template, request, flash, redirect, url_for
 from flask_login import login_user, logout_user, login_required, current_user
 from models import db, User
 from urllib.parse import urlparse
+import os
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
 
@@ -16,21 +17,42 @@ def login():
         password = request.form.get('password')
         remember = bool(request.form.get('remember'))
         
+        # Debug logging para producción
+        if os.environ.get('FLASK_ENV') == 'production':
+            print(f"[DEBUG] Login attempt for email: {email}")
+            print(f"[DEBUG] Password provided: {'Yes' if password else 'No'}")
+        
         if not email or not password:
             flash('Por favor completa todos los campos.', 'error')
             return render_template('auth/login.html')
         
-        user = User.query.filter_by(email=email).first()
-        
-        if user and user.check_password(password):
-            login_user(user, remember=remember)
-            next_page = request.args.get('next')
-            if not next_page or urlparse(next_page).netloc != '':
-                next_page = url_for('main.dashboard')
-            flash(f'¡Bienvenido {user.nombre}!', 'success')
-            return redirect(next_page)
-        else:
-            flash('Email o contraseña incorrectos.', 'error')
+        try:
+            user = User.query.filter_by(email=email).first()
+            
+            if os.environ.get('FLASK_ENV') == 'production':
+                print(f"[DEBUG] User found: {'Yes' if user else 'No'}")
+                if user:
+                    print(f"[DEBUG] User ID: {user.id}, Name: {user.nombre}")
+            
+            if user and user.check_password(password):
+                if os.environ.get('FLASK_ENV') == 'production':
+                    print(f"[DEBUG] Password check: Success")
+                
+                login_user(user, remember=remember)
+                next_page = request.args.get('next')
+                if not next_page or urlparse(next_page).netloc != '':
+                    next_page = url_for('main.dashboard')
+                flash(f'¡Bienvenido {user.nombre}!', 'success')
+                return redirect(next_page)
+            else:
+                if os.environ.get('FLASK_ENV') == 'production':
+                    print(f"[DEBUG] Password check: Failed")
+                flash('Email o contraseña incorrectos.', 'error')
+                
+        except Exception as e:
+            if os.environ.get('FLASK_ENV') == 'production':
+                print(f"[DEBUG] Database error during login: {str(e)}")
+            flash('Error de conexión. Inténtalo de nuevo.', 'error')
     
     return render_template('auth/login.html')
 
