@@ -198,7 +198,7 @@
                     const etiquetasHtml = etiquetas.map(etiqueta => 
                         `<span class="badge bg-secondary text-light me-1 etiqueta-sugerencia" 
                                style="cursor: pointer;" 
-                               onclick="agregarEtiqueta('${etiqueta}')">${etiqueta}</span>`
+                               onclick="agregarEtiquetaLocal('${etiqueta.replace(/'/g, "\\'")}')">${etiqueta}</span>`
                     ).join('');
                     
                     sugerenciasDiv.innerHTML = `
@@ -222,7 +222,7 @@
         });
     });
     
-    function agregarEtiqueta(etiqueta) {
+    function agregarEtiquetaLocal(etiqueta) {
         const etiquetasInput = document.getElementById('etiquetas');
         const etiquetasActuales = etiquetasInput.value.trim();
         

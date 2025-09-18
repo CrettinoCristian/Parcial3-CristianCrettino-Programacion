@@ -41,7 +41,7 @@ class Contacto(db.Model):
     email = db.Column(db.String(120), nullable=True)
     telefono = db.Column(db.String(20), nullable=True)
     empresa = db.Column(db.String(100), nullable=True)
-    etiquetas = db.Column(db.Text, nullable=True, default='')  # Cambiar de ARRAY a TEXT para compatibilidad
+    etiquetas = db.Column(db.Text, nullable=True, default='')  # Almacenar como JSON string para compatibilidad
     notas = db.Column(db.Text, nullable=True)
     ultima_interaccion = db.Column(db.DateTime, default=datetime.utcnow)
     fecha_creacion = db.Column(db.DateTime, default=datetime.utcnow)
@@ -57,14 +57,33 @@ class Contacto(db.Model):
     
     def get_etiquetas_str(self):
         """Retorna las etiquetas como string separado por comas"""
-        return ', '.join(self.etiquetas) if self.etiquetas else ''
+        if self.etiquetas:
+            try:
+                # Intentar cargar como JSON
+                etiquetas_list = json.loads(self.etiquetas)
+                return ', '.join(etiquetas_list) if etiquetas_list else ''
+            except (json.JSONDecodeError, TypeError):
+                # Si no es JSON válido, asumir que es string separado por comas
+                return self.etiquetas
+        return ''
     
     def set_etiquetas_from_str(self, etiquetas_str):
         """Establece las etiquetas desde un string separado por comas"""
         if etiquetas_str:
-            self.etiquetas = [tag.strip() for tag in etiquetas_str.split(',') if tag.strip()]
+            etiquetas_list = [tag.strip() for tag in etiquetas_str.split(',') if tag.strip()]
+            self.etiquetas = json.dumps(etiquetas_list)  # Guardar como JSON
         else:
-            self.etiquetas = []
+            self.etiquetas = json.dumps([])  # Lista vacía como JSON
+    
+    def get_etiquetas_list(self):
+        """Retorna las etiquetas como lista de Python"""
+        if self.etiquetas:
+            try:
+                return json.loads(self.etiquetas)
+            except (json.JSONDecodeError, TypeError):
+                # Si no es JSON válido, convertir string a lista
+                return [tag.strip() for tag in self.etiquetas.split(',') if tag.strip()]
+        return []
     
     def __repr__(self):
         return f'<Contacto {self.nombre}>'

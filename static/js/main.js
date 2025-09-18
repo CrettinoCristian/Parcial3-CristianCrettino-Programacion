@@ -361,7 +361,344 @@ const CRM = {
     }
 };
 
-// Funciones específicas para contactos
+// Gestor de Modal de Estadísticas
+const StatsModalManager = {
+    modal: null,
+    modalTitle: null,
+    modalBody: null,
+    closeBtn: null,
+    
+    init: function() {
+        this.modal = document.getElementById('statsModal');
+        this.modalTitle = document.getElementById('modalTitle');
+        this.modalBody = document.getElementById('modalBody');
+        this.closeBtn = document.getElementById('closeModal');
+        
+        if (!this.modal) return;
+        
+        this.setupEventListeners();
+        this.setupClickableStats();
+    },
+    
+    setupEventListeners: function() {
+        // Cerrar modal con botón X
+        if (this.closeBtn) {
+            this.closeBtn.addEventListener('click', () => this.closeModal());
+        }
+        
+        // Cerrar modal al hacer clic en el fondo
+        this.modal.addEventListener('click', (e) => {
+            if (e.target === this.modal) {
+                this.closeModal();
+            }
+        });
+        
+        // Cerrar modal con tecla Escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && this.modal.classList.contains('show')) {
+                this.closeModal();
+            }
+        });
+    },
+    
+    setupClickableStats: function() {
+        const clickableSections = document.querySelectorAll('.stats-section-clickable');
+        
+        clickableSections.forEach(section => {
+            section.addEventListener('click', (e) => {
+                e.preventDefault();
+                const title = section.getAttribute('data-modal-title');
+                const contentType = section.getAttribute('data-modal-content');
+                this.openModal(title, contentType, section);
+            });
+            
+            // Agregar indicador visual de que es clickeable
+            section.style.cursor = 'pointer';
+        });
+    },
+    
+    openModal: function(title, contentType, sourceElement) {
+        if (!this.modal) return;
+        
+        // Establecer título
+        if (this.modalTitle) {
+            this.modalTitle.textContent = title;
+        }
+        
+        // Generar contenido basado en el tipo
+        const content = this.generateModalContent(contentType, sourceElement);
+        if (this.modalBody) {
+            this.modalBody.innerHTML = content;
+        }
+        
+        // Mostrar modal con animación
+        this.modal.classList.add('show');
+        document.body.style.overflow = 'hidden'; // Prevenir scroll del body
+        
+        // Focus en el botón de cerrar para accesibilidad
+        if (this.closeBtn) {
+            this.closeBtn.focus();
+        }
+    },
+    
+    closeModal: function() {
+        if (!this.modal) return;
+        
+        this.modal.classList.remove('show');
+        document.body.style.overflow = ''; // Restaurar scroll del body
+    },
+    
+    generateModalContent: function(contentType, sourceElement) {
+        const cardBody = sourceElement.querySelector('.card-body');
+        if (!cardBody) return '<p>No hay contenido disponible</p>';
+        
+        let content = '<div class="stats-content">';
+        
+        // Buscar imagen del gráfico
+        const img = cardBody.querySelector('img');
+        if (img) {
+            const imageId = 'zoomableImage_' + Date.now();
+            content += `
+                <div class="zoom-controls">
+                    <div class="zoom-buttons">
+                        <button class="zoom-btn" onclick="StatsModalManager.zoomOut('${imageId}')">-</button>
+                        <button class="zoom-btn" onclick="StatsModalManager.resetZoom('${imageId}')">⌂</button>
+                        <button class="zoom-btn" onclick="StatsModalManager.zoomIn('${imageId}')">+</button>
+                    </div>
+                    <input type="range" 
+                           class="zoom-slider" 
+                           id="zoomSlider_${imageId}"
+                           min="25" 
+                           max="500" 
+                           value="100" 
+                           step="25"
+                           oninput="StatsModalManager.setZoom('${imageId}', this.value)">
+                    <div class="zoom-level" id="zoomLevel_${imageId}">100%</div>
+                </div>
+                <div class="image-container" style="overflow: auto; cursor: grab; position: relative;">
+                    <img src="${img.src}" 
+                         id="${imageId}"
+                         class="zoomable-image" 
+                         alt="${img.alt}"
+                         style="max-width: none; height: auto; transform: scale(1); transition: transform 0.2s ease;"
+                         ondblclick="StatsModalManager.toggleZoom('${imageId}')">
+                </div>
+            `;
+        }
+        
+        // Buscar tabla de datos
+        const table = cardBody.querySelector('table');
+        if (table) {
+            content += `
+                <div class="table-responsive mt-4">
+                    <h4>Datos Detallados</h4>
+                    ${table.outerHTML}
+                </div>
+            `;
+        }
+        
+        // Buscar métricas adicionales
+        const metrics = cardBody.querySelectorAll('.badge, .text-muted, .fw-bold');
+        if (metrics.length > 0) {
+            content += '<div class="mt-3"><h5>Información Adicional</h5>';
+            metrics.forEach(metric => {
+                if (metric.textContent.trim()) {
+                    content += `<p class="mb-1">${metric.outerHTML}</p>`;
+                }
+            });
+            content += '</div>';
+        }
+        
+        // Agregar información contextual según el tipo
+        switch (contentType) {
+            case 'etiquetas':
+                content += this.getEtiquetasInfo();
+                break;
+            case 'interacciones':
+                content += this.getInteraccionesInfo();
+                break;
+            case 'empresas':
+                content += this.getEmpresasInfo();
+                break;
+        }
+        
+        content += '</div>';
+        return content;
+    },
+    
+    getEtiquetasInfo: function() {
+        return `
+            <div class="mt-4 p-3" style="background: rgba(255, 255, 255, 0.05); border: 1px solid #333; border-radius: 8px;">
+                <h5 style="color: #3498db;"><i class="bi bi-info-circle"></i> Acerca de las Etiquetas</h5>
+                <p class="mb-2" style="color: #bdc3c7;">Las etiquetas te ayudan a categorizar y organizar tus contactos de manera eficiente.</p>
+                <ul class="mb-0" style="color: #ecf0f1;">
+                    <li>Usa etiquetas descriptivas como "Cliente", "Proveedor", "Prospecto"</li>
+                    <li>Puedes asignar múltiples etiquetas a un mismo contacto</li>
+                    <li>Filtra contactos por etiquetas desde la lista principal</li>
+                </ul>
+            </div>
+        `;
+    },
+    
+    getInteraccionesInfo: function() {
+        return `
+            <div class="mt-4 p-3" style="background: rgba(255, 255, 255, 0.05); border: 1px solid #333; border-radius: 8px;">
+                <h5 style="color: #3498db;"><i class="bi bi-info-circle"></i> Análisis de Interacciones</h5>
+                <p class="mb-2" style="color: #bdc3c7;">Este gráfico muestra la evolución de tus interacciones a lo largo del tiempo.</p>
+                <ul class="mb-0" style="color: #ecf0f1;">
+                    <li>Identifica patrones en tu actividad de seguimiento</li>
+                    <li>Planifica mejor tus futuras interacciones</li>
+                    <li>Mantén un registro consistente de comunicaciones</li>
+                </ul>
+            </div>
+        `;
+    },
+    
+    getEmpresasInfo: function() {
+        return `
+            <div class="mt-4 p-3" style="background: rgba(255, 255, 255, 0.05); border: 1px solid #333; border-radius: 8px;">
+                <h5 style="color: #3498db;"><i class="bi bi-info-circle"></i> Distribución por Empresas</h5>
+                <p class="mb-2" style="color: #bdc3c7;">Visualiza cómo se distribuyen tus contactos entre diferentes empresas.</p>
+                <ul class="mb-0" style="color: #ecf0f1;">
+                    <li>Identifica tus principales fuentes de contactos</li>
+                    <li>Diversifica tu red de contactos empresariales</li>
+                    <li>Enfócate en empresas con mayor potencial</li>
+                </ul>
+            </div>
+        `;
+    },
+    
+    // Funciones de Zoom
+    zoomIn: function(imageId) {
+        const slider = document.getElementById('zoomSlider_' + imageId);
+        if (slider) {
+            const currentValue = parseInt(slider.value);
+            const newValue = Math.min(500, currentValue + 25);
+            slider.value = newValue;
+            this.setZoom(imageId, newValue);
+        }
+    },
+    
+    zoomOut: function(imageId) {
+        const slider = document.getElementById('zoomSlider_' + imageId);
+        if (slider) {
+            const currentValue = parseInt(slider.value);
+            const newValue = Math.max(25, currentValue - 25);
+            slider.value = newValue;
+            this.setZoom(imageId, newValue);
+        }
+    },
+    
+    resetZoom: function(imageId) {
+        const slider = document.getElementById('zoomSlider_' + imageId);
+        if (slider) {
+            slider.value = 100;
+            this.setZoom(imageId, 100);
+        }
+    },
+    
+    setZoom: function(imageId, zoomLevel) {
+        const image = document.getElementById(imageId);
+        const zoomDisplay = document.getElementById('zoomLevel_' + imageId);
+        const container = image?.parentElement;
+        
+        if (image) {
+            const scale = zoomLevel / 100;
+            image.style.transform = `scale(${scale})`;
+            image.style.transformOrigin = 'center center';
+            
+            // Configurar el contenedor para permitir scroll cuando la imagen es más grande
+            if (container) {
+                container.style.overflow = 'auto';
+                container.style.maxHeight = '70vh';
+                container.style.maxWidth = '100%';
+                container.style.border = '1px solid #444';
+                container.style.borderRadius = '8px';
+                
+                // Habilitar arrastre para desplazamiento
+                this.enableDragScroll(container);
+            }
+        }
+        
+        if (zoomDisplay) {
+            zoomDisplay.textContent = zoomLevel + '%';
+        }
+    },
+    
+    toggleZoom: function(imageId) {
+        const slider = document.getElementById('zoomSlider_' + imageId);
+        if (slider) {
+            const currentValue = parseInt(slider.value);
+            const newValue = currentValue === 100 ? 200 : 100;
+            slider.value = newValue;
+            this.setZoom(imageId, newValue);
+        }
+    },
+    
+    // Nueva función para habilitar arrastre con mouse
+    enableDragScroll: function(container) {
+        let isDown = false;
+        let startX;
+        let startY;
+        let scrollLeft;
+        let scrollTop;
+        
+        // Remover listeners previos para evitar duplicados
+        container.onmousedown = null;
+        container.onmouseleave = null;
+        container.onmouseup = null;
+        container.onmousemove = null;
+        
+        container.addEventListener('mousedown', (e) => {
+            isDown = true;
+            container.style.cursor = 'grabbing';
+            startX = e.pageX - container.offsetLeft;
+            startY = e.pageY - container.offsetTop;
+            scrollLeft = container.scrollLeft;
+            scrollTop = container.scrollTop;
+            e.preventDefault();
+        });
+        
+        container.addEventListener('mouseleave', () => {
+            isDown = false;
+            container.style.cursor = 'grab';
+        });
+        
+        container.addEventListener('mouseup', () => {
+            isDown = false;
+            container.style.cursor = 'grab';
+        });
+        
+        container.addEventListener('mousemove', (e) => {
+            if (!isDown) return;
+            e.preventDefault();
+            const x = e.pageX - container.offsetLeft;
+            const y = e.pageY - container.offsetTop;
+            const walkX = (x - startX) * 2;
+            const walkY = (y - startY) * 2;
+            container.scrollLeft = scrollLeft - walkX;
+            container.scrollTop = scrollTop - walkY;
+        });
+        
+        // Soporte para rueda del mouse para zoom
+        container.addEventListener('wheel', (e) => {
+            if (e.ctrlKey) {
+                e.preventDefault();
+                const imageId = container.querySelector('.zoomable-image').id;
+                const slider = document.getElementById('zoomSlider_' + imageId);
+                if (slider) {
+                    const currentValue = parseInt(slider.value);
+                    const delta = e.deltaY > 0 ? -25 : 25;
+                    const newValue = Math.max(25, Math.min(500, currentValue + delta));
+                    slider.value = newValue;
+                    this.setZoom(imageId, newValue);
+                }
+            }
+        });
+    }
+};
+
+// Gestor de Contactos
 const ContactosManager = {
     // Agregar etiqueta desde sugerencias
     addTag: function(tag, inputId = 'etiquetas') {
@@ -448,6 +785,9 @@ const InteraccionesManager = {
 document.addEventListener('DOMContentLoaded', function() {
     CRM.init();
     
+    // Inicializar gestor de modal de estadísticas
+    StatsModalManager.init();
+    
     // Exponer funciones globalmente para uso en templates
     window.CRM = CRM;
     window.ContactosManager = ContactosManager;
@@ -456,6 +796,12 @@ document.addEventListener('DOMContentLoaded', function() {
     // Funciones de conveniencia globales
     window.agregarEtiqueta = ContactosManager.addTag;
     window.aplicarPlantilla = InteraccionesManager.applyTemplate;
+    
+    // Mostrar toast de bienvenida si es necesario
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('welcome') === 'true') {
+        CRM.utils.showToast('¡Bienvenido a tu Mini CRM Personal!', 'success');
+    }
 });
 
 // Manejar errores globales

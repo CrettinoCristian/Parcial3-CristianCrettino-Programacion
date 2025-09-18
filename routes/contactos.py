@@ -29,8 +29,17 @@ def listar():
     
     # Aplicar filtro por etiqueta
     if etiqueta_filter:
-        # Usar ANY para buscar en el array de PostgreSQL
-        query = query.filter(Contacto.etiquetas.any(etiqueta_filter))
+        # Buscar en el campo JSON de etiquetas
+        contactos_con_etiqueta = []
+        for contacto in query.all():
+            if etiqueta_filter in contacto.get_etiquetas_list():
+                contactos_con_etiqueta.append(contacto.id)
+        
+        if contactos_con_etiqueta:
+            query = query.filter(Contacto.id.in_(contactos_con_etiqueta))
+        else:
+            # Si no hay contactos con esa etiqueta, devolver query vacío
+            query = query.filter(Contacto.id == -1)
     
     # Ordenar por última interacción
     contactos = query.order_by(desc(Contacto.ultima_interaccion)).paginate(
@@ -40,8 +49,7 @@ def listar():
     # Obtener todas las etiquetas únicas para el filtro
     todas_etiquetas = set()
     for contacto in Contacto.query.filter_by(user_id=current_user.id).all():
-        if contacto.etiquetas:
-            todas_etiquetas.update(contacto.etiquetas)
+        todas_etiquetas.update(contacto.get_etiquetas_list())
     
     return render_template('contactos/listar.html', 
                          contactos=contactos,
@@ -191,7 +199,6 @@ def api_etiquetas():
     contactos = Contacto.query.filter_by(user_id=current_user.id).all()
     
     for contacto in contactos:
-        if contacto.etiquetas:
-            etiquetas.update(contacto.etiquetas)
+        etiquetas.update(contacto.get_etiquetas_list())
     
     return jsonify(sorted(list(etiquetas)))
