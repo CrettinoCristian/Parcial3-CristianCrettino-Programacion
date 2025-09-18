@@ -39,9 +39,10 @@ def nueva(contacto_id):
         # Procesar fecha
         try:
             if fecha_str:
+                # Parsear la fecha sin conversión de zona horaria
                 fecha = datetime.strptime(fecha_str, '%Y-%m-%dT%H:%M')
             else:
-                fecha = datetime.now()  # Usar hora local en lugar de UTC
+                fecha = datetime.now()  # Usar hora local
         except ValueError:
             flash('Formato de fecha inválido.', 'error')
             return render_template('interacciones/form.html', contacto=contacto)
@@ -104,6 +105,7 @@ def editar(id):
         # Procesar fecha
         try:
             if fecha_str:
+                # Parsear la fecha sin conversión de zona horaria
                 fecha = datetime.strptime(fecha_str, '%Y-%m-%dT%H:%M')
             else:
                 fecha = interaccion.fecha

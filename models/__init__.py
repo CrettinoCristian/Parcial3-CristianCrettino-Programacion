@@ -13,8 +13,9 @@ class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nombre = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False, index=True)
-    password_hash = db.Column(db.String(128), nullable=False)
-    fecha_registro = db.Column(db.DateTime, default=datetime.utcnow)
+    password_hash = db.Column(db.String(255), nullable=False)
+    fecha_creacion = db.Column(db.DateTime, default=datetime.utcnow)
+    activo = db.Column(db.Boolean, default=True)
     
     # Relación con contactos
     contactos = db.relationship('Contacto', backref='usuario', lazy=True, cascade='all, delete-orphan')

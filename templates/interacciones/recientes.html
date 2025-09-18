@@ -114,9 +114,9 @@
                                     <!-- Fecha -->
                                     <div class="mb-3">
                                         <div class="badge bg-secondary text-light mb-1">
-                                            <i class="bi bi-calendar"></i> 
-                                            {{ interaccion.fecha.strftime('%d/%m/%Y') }}
-                                        </div>
+                                             <i class="bi bi-calendar"></i> 
+                                             {{ interaccion.fecha.strftime('%d/%m/%Y') }}
+                                         </div>
                                         <br>
                                         <small class="text-muted">
                                             <i class="bi bi-clock"></i> 
@@ -280,25 +280,59 @@
                 const fecha = new Date(elemento.dataset.fecha);
                 const ahora = new Date();
                 const diferencia = ahora - fecha;
-                const minutos = Math.floor(diferencia / (1000 * 60));
-                const horas = Math.floor(diferencia / (1000 * 60 * 60));
-                const dias = Math.floor(diferencia / (1000 * 60 * 60 * 24));
+                const totalMinutos = Math.abs(diferencia) / (1000 * 60);
+                const totalHoras = Math.floor(totalMinutos / 60);
+                const dias = Math.floor(totalHoras / 24);
+                const horasRestantes = totalHoras % 24;
                 
                 let texto = '';
-                if (minutos < 60) {
-                    texto = `Hace ${minutos} min`;
-                } else if (horas < 24) {
-                    texto = `Hace ${horas} h`;
-                } else if (dias === 1) {
-                    texto = 'Ayer';
-                } else if (dias < 7) {
-                    texto = `Hace ${dias} días`;
-                } else if (dias < 30) {
-                    const semanas = Math.floor(dias / 7);
-                    texto = `Hace ${semanas} sem`;
+                
+                // Si la fecha es futura
+                if (diferencia < 0) {
+                    if (totalMinutos < 60) {
+                        texto = `En ${Math.floor(totalMinutos)} min`;
+                    } else if (totalHoras < 24) {
+                        texto = `Faltan ${totalHoras} hora${totalHoras > 1 ? 's' : ''}`;
+                    } else if (dias === 1 && horasRestantes === 0) {
+                        texto = 'Mañana';
+                    } else if (dias === 1) {
+                        texto = `Mañana (${horasRestantes}h)`;
+                    } else if (dias < 7) {
+                        if (horasRestantes === 0) {
+                            texto = `En ${dias} día${dias > 1 ? 's' : ''}`;
+                        } else {
+                            texto = `En ${dias}d ${horasRestantes}h`;
+                        }
+                    } else if (dias < 30) {
+                        const semanas = Math.floor(dias / 7);
+                        texto = `En ${semanas} sem`;
+                    } else {
+                        const meses = Math.floor(dias / 30);
+                        texto = `En ${meses} mes${meses > 1 ? 'es' : ''}`;
+                    }
                 } else {
-                    const meses = Math.floor(dias / 30);
-                    texto = `Hace ${meses} mes${meses > 1 ? 'es' : ''}`;
+                    // Si la fecha es pasada
+                    if (totalMinutos < 60) {
+                        texto = `Hace ${Math.floor(totalMinutos)} min`;
+                    } else if (totalHoras < 24) {
+                        texto = `Hace ${totalHoras} hora${totalHoras > 1 ? 's' : ''}`;
+                    } else if (dias === 1 && horasRestantes === 0) {
+                        texto = 'Ayer';
+                    } else if (dias === 1) {
+                        texto = `Ayer (${horasRestantes}h)`;
+                    } else if (dias < 7) {
+                        if (horasRestantes === 0) {
+                            texto = `Hace ${dias} día${dias > 1 ? 's' : ''}`;
+                        } else {
+                            texto = `Hace ${dias}d ${horasRestantes}h`;
+                        }
+                    } else if (dias < 30) {
+                        const semanas = Math.floor(dias / 7);
+                        texto = `Hace ${semanas} sem`;
+                    } else {
+                        const meses = Math.floor(dias / 30);
+                        texto = `Hace ${meses} mes${meses > 1 ? 'es' : ''}`;
+                    }
                 }
                 
                 elemento.textContent = texto;

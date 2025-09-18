@@ -198,7 +198,7 @@ const CRM = {
     
     // Configurar validación de formularios
     setupFormValidation: function() {
-        document.querySelectorAll('form').forEach(form => {
+        document.querySelectorAll('form:not([action*="login"])').forEach(form => {
             form.addEventListener('submit', (e) => {
                 if (!form.checkValidity()) {
                     e.preventDefault();

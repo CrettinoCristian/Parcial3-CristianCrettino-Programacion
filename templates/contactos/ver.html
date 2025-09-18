@@ -143,6 +143,9 @@
                                     <small class="text-muted">
                                         <i class="bi bi-calendar"></i> 
                                         {{ interaccion.fecha.strftime('%d/%m/%Y %H:%M') }}
+                                        <span class="tiempo-transcurrido ms-2" data-fecha="{{ interaccion.fecha.isoformat() }}">
+                                            Calculando...
+                                        </span>
                                     </small>
                                 </div>
                                 <div class="ms-2">
@@ -276,5 +279,72 @@
             }, 2000);
         });
     }
+
+    function calcularTiempoTranscurrido() {
+        const elementos = document.querySelectorAll('.tiempo-transcurrido');
+        elementos.forEach(elemento => {
+            const fecha = new Date(elemento.dataset.fecha);
+            const ahora = new Date();
+            const diferencia = ahora - fecha;
+            const totalMinutos = Math.abs(diferencia) / (1000 * 60);
+            const totalHoras = Math.floor(totalMinutos / 60);
+            const dias = Math.floor(totalHoras / 24);
+            const horasRestantes = totalHoras % 24;
+            
+            let texto = '';
+            
+            // Si la fecha es futura
+            if (diferencia < 0) {
+                if (totalMinutos < 60) {
+                    texto = `(en ${Math.floor(totalMinutos)} min)`;
+                } else if (totalHoras < 24) {
+                    texto = `(faltan ${totalHoras} hora${totalHoras > 1 ? 's' : ''})`;
+                } else if (dias === 1 && horasRestantes === 0) {
+                    texto = '(mañana)';
+                } else if (dias === 1) {
+                    texto = `(mañana, ${horasRestantes}h)`;
+                } else if (dias < 7) {
+                    if (horasRestantes === 0) {
+                        texto = `(en ${dias} día${dias > 1 ? 's' : ''})`;
+                    } else {
+                        texto = `(en ${dias}d ${horasRestantes}h)`;
+                    }
+                } else if (dias < 30) {
+                    const semanas = Math.floor(dias / 7);
+                    texto = `(en ${semanas} sem)`;
+                } else {
+                    const meses = Math.floor(dias / 30);
+                    texto = `(en ${meses} mes${meses > 1 ? 'es' : ''})`;
+                }
+            } else {
+                // Si la fecha es pasada
+                if (totalMinutos < 60) {
+                    texto = `(hace ${Math.floor(totalMinutos)} min)`;
+                } else if (totalHoras < 24) {
+                    texto = `(hace ${totalHoras} hora${totalHoras > 1 ? 's' : ''})`;
+                } else if (dias === 1 && horasRestantes === 0) {
+                    texto = '(ayer)';
+                } else if (dias === 1) {
+                    texto = `(ayer, ${horasRestantes}h)`;
+                } else if (dias < 7) {
+                    if (horasRestantes === 0) {
+                        texto = `(hace ${dias} día${dias > 1 ? 's' : ''})`;
+                    } else {
+                        texto = `(hace ${dias}d ${horasRestantes}h)`;
+                    }
+                } else if (dias < 30) {
+                    const semanas = Math.floor(dias / 7);
+                    texto = `(hace ${semanas} sem)`;
+                } else {
+                    const meses = Math.floor(dias / 30);
+                    texto = `(hace ${meses} mes${meses > 1 ? 'es' : ''})`;
+                }
+            }
+            
+            elemento.textContent = texto;
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', calcularTiempoTranscurrido);
 </script>
 {% endblock %}
