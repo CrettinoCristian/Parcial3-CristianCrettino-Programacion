@@ -196,7 +196,7 @@
                 if (etiquetas.length > 0) {
                     const sugerenciasDiv = document.getElementById('etiquetasSugerencias');
                     const etiquetasHtml = etiquetas.map(etiqueta => 
-                        `<span class="badge bg-light text-dark me-1 etiqueta-sugerencia" 
+                        `<span class="badge bg-secondary text-light me-1 etiqueta-sugerencia" 
                                style="cursor: pointer;" 
                                onclick="agregarEtiqueta('${etiqueta}')">${etiqueta}</span>`
                     ).join('');
