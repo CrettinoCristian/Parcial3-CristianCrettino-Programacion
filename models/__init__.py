@@ -41,7 +41,7 @@ class Contacto(db.Model):
     email = db.Column(db.String(120), nullable=True)
     telefono = db.Column(db.String(20), nullable=True)
     empresa = db.Column(db.String(100), nullable=True)
-    etiquetas = db.Column(db.ARRAY(db.String), nullable=True, default=[])
+    etiquetas = db.Column(db.Text, nullable=True, default='')  # Cambiar de ARRAY a TEXT para compatibilidad
     notas = db.Column(db.Text, nullable=True)
     ultima_interaccion = db.Column(db.DateTime, default=datetime.utcnow)
     fecha_creacion = db.Column(db.DateTime, default=datetime.utcnow)

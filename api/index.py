@@ -46,10 +46,37 @@ else:
 # Inicializar la base de datos si no existe
 with app.app_context():
     try:
-        db.create_all()
-        print("[DEBUG] Database tables created successfully")
+        # Verificar si las tablas existen
+        inspector = db.inspect(db.engine)
+        existing_tables = inspector.get_table_names()
+        print(f"[DEBUG] Existing tables: {existing_tables}")
+        
+        if not existing_tables or 'users' not in existing_tables:
+            print("[DEBUG] Creating database tables...")
+            db.create_all()
+            print("[DEBUG] Database tables created successfully")
+            
+            # Crear usuario de prueba si no existe
+            from models import User
+            test_user = User.query.filter_by(email="crettinocristian@gmail.com").first()
+            if not test_user:
+                print("[DEBUG] Creating test user...")
+                test_user = User(nombre="Cristian Crettino", email="crettinocristian@gmail.com")
+                test_user.set_password("123456")
+                db.session.add(test_user)
+                db.session.commit()
+                print("[DEBUG] Test user created successfully")
+        else:
+            print("[DEBUG] Database tables already exist")
+            
     except Exception as e:
         print(f"[DEBUG] Error inicializando base de datos: {e}")
+        # Intentar crear las tablas de todas formas
+        try:
+            db.create_all()
+            print("[DEBUG] Tables created after error")
+        except Exception as e2:
+            print(f"[DEBUG] Failed to create tables: {e2}")
 
 # Vercel necesita que la aplicación se exporte directamente
 # No usar if __name__ == "__main__" en funciones serverless
